@@ -114,11 +114,14 @@ function setupFilterPanel() {
         icon.textContent = filterPanel.classList.contains('active') ? '▲' : '▼';
     });
     
-    // Filter option selection
+    // Filter option selection - use event delegation
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('filter-option')) {
+            e.preventDefault();
             const filter = e.target.dataset.filter;
             const value = e.target.dataset.value;
+            
+            console.log('Filter clicked:', filter, value); // Debug log
             
             if (filter === 'experience') {
                 // Only one experience level can be selected
@@ -127,13 +130,27 @@ function setupFilterPanel() {
                 });
                 e.target.classList.add('selected');
                 selectedFilters.experience = value;
-            } else if (filter === 'technologies' || filter === 'fields') {
+                console.log('Selected experience:', value); // Debug log
+            } else if (filter === 'technologies') {
                 e.target.classList.toggle('selected');
                 if (e.target.classList.contains('selected')) {
-                    selectedFilters[filter].push(value);
+                    if (!selectedFilters.technologies.includes(value)) {
+                        selectedFilters.technologies.push(value);
+                    }
                 } else {
-                    selectedFilters[filter] = selectedFilters[filter].filter(v => v !== value);
+                    selectedFilters.technologies = selectedFilters.technologies.filter(v => v !== value);
                 }
+                console.log('Selected technologies:', selectedFilters.technologies); // Debug log
+            } else if (filter === 'fields') {
+                e.target.classList.toggle('selected');
+                if (e.target.classList.contains('selected')) {
+                    if (!selectedFilters.fields.includes(value)) {
+                        selectedFilters.fields.push(value);
+                    }
+                } else {
+                    selectedFilters.fields = selectedFilters.fields.filter(v => v !== value);
+                }
+                console.log('Selected fields:', selectedFilters.fields); // Debug log
             }
         }
     });
@@ -149,6 +166,9 @@ function setupFilterPanel() {
         document.querySelectorAll('.filter-option').forEach(opt => {
             opt.classList.remove('selected');
         });
+        
+        // Reload all recruits
+        loadRecruits();
     });
     
     // Apply filters
