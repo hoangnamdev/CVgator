@@ -387,7 +387,7 @@ Be specific, actionable, and constructive in your feedback.`;
     
     // Add timeout to prevent hanging
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('AI feedback timeout')), 15000); // 15 second timeout
+      setTimeout(() => reject(new Error('AI feedback timeout')), 60000); // 60 second timeout
     });
     
     const aiPromise = model.generateContent(prompt).then(result => result.response.text());
@@ -1328,13 +1328,25 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
         message: 'Only PDF files are allowed' 
       });
     }
+    
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (cvFile.size > maxSize) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'File size too large. Maximum allowed size is 10MB.' 
+      });
+    }
+    
+    console.log(`File size: ${(cvFile.size / 1024 / 1024).toFixed(2)}MB`);
 
-    // Upload file to Cloudinary
+    // Upload file to Cloudinary with timeout
     console.log('Starting Cloudinary upload...');
     const cloudinaryStartTime = Date.now();
     let cloudinaryResult;
     try {
-      cloudinaryResult = await cloudinary.uploader.upload(
+      // Add timeout to Cloudinary upload (45 seconds)
+      const cloudinaryPromise = cloudinary.uploader.upload(
         `data:${cvFile.mimetype};base64,${cvFile.buffer.toString('base64')}`,
         {
           folder: 'cvgator/cvs',
@@ -1343,13 +1355,19 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
           unique_filename: true
         }
       );
+      
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Cloudinary upload timeout')), 45000); // 45 second timeout
+      });
+      
+      cloudinaryResult = await Promise.race([cloudinaryPromise, timeoutPromise]);
       const cloudinaryTime = Date.now() - cloudinaryStartTime;
       console.log(`Cloudinary upload completed in ${cloudinaryTime}ms`);
     } catch (uploadError) {
       console.error('Cloudinary upload error:', uploadError);
       return res.status(500).json({ 
         success: false, 
-        message: 'Failed to upload file to cloud storage' 
+        message: 'Failed to upload file to cloud storage. Upload may be taking too long.' 
       });
     }
 
@@ -1409,7 +1427,7 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
     }
 
     // Set initial AI feedback message
-    let aiFeedback = 'AI feedback is temporarily disabled to improve upload performance.';
+    let aiFeedback = 'AI feedback is being generated...';
 
     // Create new post
     const post = new Post({
@@ -1430,13 +1448,12 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
     console.log(`Database save completed in ${dbTime}ms`);
 
     // Start AI feedback generation in background (don't await)
-    // Temporarily disabled to prevent upload timeouts
-    // generateAIFeedbackAsync(post._id, cvFile.buffer, title.trim(), context.trim())
-    //   .catch(error => {
-    //     console.error('Background AI feedback generation failed:', error);
-    //     // Update the post with error message
-    //     updatePostAIFeedback(post._id, 'AI feedback is currently unavailable.');
-    //   });
+    generateAIFeedbackAsync(post._id, cvFile.buffer, title.trim(), context.trim())
+      .catch(error => {
+        console.error('Background AI feedback generation failed:', error);
+        // Update the post with error message
+        updatePostAIFeedback(post._id, 'AI feedback is currently unavailable.');
+      });
 
     // Update hashtag usage counts in background (don't await)
     updateHashtagUsageCounts()
