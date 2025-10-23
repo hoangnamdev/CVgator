@@ -524,6 +524,8 @@ app.get('/api/recruits', async (req, res) => {
       .populate('postId')
       .sort({ publishedAt: -1 });
     
+    console.log(`Found ${recruits.length} recruits in database:`, recruits.map(r => ({ id: r._id, authorId: r.authorId, name: r.name })));
+    
     res.json({ success: true, recruits });
   } catch (error) {
     console.error('Error fetching recruits:', error);
