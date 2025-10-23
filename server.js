@@ -387,7 +387,7 @@ Be specific, actionable, and constructive in your feedback.`;
     
     // Add timeout to prevent hanging
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('AI feedback timeout')), 30000); // 30 second timeout
+      setTimeout(() => reject(new Error('AI feedback timeout')), 15000); // 15 second timeout
     });
     
     const aiPromise = model.generateContent(prompt).then(result => result.response.text());
@@ -1409,7 +1409,7 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
     }
 
     // Set initial AI feedback message
-    let aiFeedback = 'AI feedback is being generated...';
+    let aiFeedback = 'AI feedback is temporarily disabled to improve upload performance.';
 
     // Create new post
     const post = new Post({
@@ -1430,12 +1430,13 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
     console.log(`Database save completed in ${dbTime}ms`);
 
     // Start AI feedback generation in background (don't await)
-    generateAIFeedbackAsync(post._id, cvFile.buffer, title.trim(), context.trim())
-      .catch(error => {
-        console.error('Background AI feedback generation failed:', error);
-        // Update the post with error message
-        updatePostAIFeedback(post._id, 'AI feedback is currently unavailable.');
-      });
+    // Temporarily disabled to prevent upload timeouts
+    // generateAIFeedbackAsync(post._id, cvFile.buffer, title.trim(), context.trim())
+    //   .catch(error => {
+    //     console.error('Background AI feedback generation failed:', error);
+    //     // Update the post with error message
+    //     updatePostAIFeedback(post._id, 'AI feedback is currently unavailable.');
+    //   });
 
     // Update hashtag usage counts in background (don't await)
     updateHashtagUsageCounts()
