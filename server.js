@@ -1340,5 +1340,8 @@ setInterval(updateHashtagUsageCounts, 6 * 60 * 60 * 1000);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-  initializeSampleData();
+  // Only initialize sample data in development
+  if (process.env.NODE_ENV !== 'production') {
+    initializeSampleData();
+  }
 });
