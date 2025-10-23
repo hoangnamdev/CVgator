@@ -1337,19 +1337,29 @@ textarea:focus {
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
+.contact-btn.active {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
 .contact-bubble {
-    position: relative;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
     background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
     border: 2px solid #667eea;
     border-radius: 12px;
     padding: 20px;
-    margin-top: 15px;
     box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
     max-width: 100%;
     word-wrap: break-word;
     animation: slideDown 0.3s ease;
     min-height: 50px;
     transform-origin: top;
+    z-index: 1000;
 }
 
 @keyframes slideDown {
@@ -1363,6 +1373,23 @@ textarea:focus {
         transform: scaleY(1);
         max-height: 200px;
     }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        transform: scaleY(1);
+        max-height: 200px;
+    }
+    to {
+        opacity: 0;
+        transform: scaleY(0);
+        max-height: 0;
+    }
+}
+
+.contact-bubble.closing {
+    animation: slideUp 0.3s ease forwards;
 }
 
 .contact-info h4 {

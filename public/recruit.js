@@ -297,11 +297,33 @@ function toggleContactInfo(button) {
     const bubble = button.nextElementSibling;
     const isVisible = bubble.style.display !== 'none';
     
-    // Close all other contact bubbles
+    // Close all other contact bubbles and reset their buttons
     document.querySelectorAll('.contact-bubble').forEach(b => {
-        b.style.display = 'none';
+        if (b !== bubble) {
+            b.style.display = 'none';
+            b.classList.remove('closing');
+        }
     });
     
-    // Toggle current bubble
-    bubble.style.display = isVisible ? 'none' : 'block';
+    // Reset all other contact buttons
+    document.querySelectorAll('.contact-btn').forEach(btn => {
+        if (btn !== button) {
+            btn.classList.remove('active');
+        }
+    });
+    
+    if (isVisible) {
+        // Close current bubble with animation
+        bubble.classList.add('closing');
+        button.classList.remove('active');
+        
+        setTimeout(() => {
+            bubble.style.display = 'none';
+            bubble.classList.remove('closing');
+        }, 300); // Match animation duration
+    } else {
+        // Open current bubble
+        bubble.style.display = 'block';
+        button.classList.add('active');
+    }
 }
