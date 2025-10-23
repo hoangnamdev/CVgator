@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     checkAuthentication();
     setupFileUpload();
     setupFormSubmission();
+    setupTitleCharacterCounter();
 });
 
 function checkAuthentication() {
@@ -69,6 +70,34 @@ function setupFileUpload() {
     });
 }
 
+function setupTitleCharacterCounter() {
+    const titleInput = document.getElementById('postTitle');
+    const charCount = document.getElementById('charCount');
+    const charCounter = document.querySelector('.character-counter');
+    const titleError = document.getElementById('titleError');
+    
+    titleInput.addEventListener('input', function() {
+        const currentLength = this.value.length;
+        charCount.textContent = currentLength;
+        
+        // Remove previous error states
+        titleInput.classList.remove('error');
+        charCounter.classList.remove('warning', 'error');
+        titleError.style.display = 'none';
+        
+        // Update visual indicators based on character count
+        if (currentLength > 50) {
+            // Exceeded limit - show error
+            titleInput.classList.add('error');
+            charCounter.classList.add('error');
+            titleError.style.display = 'block';
+        } else if (currentLength > 40) {
+            // Warning zone - show warning
+            charCounter.classList.add('warning');
+        }
+    });
+}
+
 function setupFormSubmission() {
     const uploadForm = document.getElementById('uploadForm');
     
@@ -89,6 +118,12 @@ function setupFormSubmission() {
         // Validate all fields
         if (!title) {
             alert('Please enter a post title.');
+            return;
+        }
+        
+        // Validate title length
+        if (title.length > 50) {
+            alert('Title must be 50 characters or less.');
             return;
         }
         

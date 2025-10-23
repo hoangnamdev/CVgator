@@ -945,6 +945,36 @@ input[type="password"]:focus {
     display: block;
 }
 
+/* Character Counter */
+.character-counter {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 5px;
+    font-size: 0.85em;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.character-counter.warning {
+    color: #ff9500;
+}
+
+.character-counter.error {
+    color: #ff4444;
+    font-weight: 500;
+}
+
+/* Title Input Error State */
+#postTitle.error {
+    border-color: #ff4444;
+    box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
+}
+
+#postTitle.error:focus {
+    border-color: #ff4444;
+    box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.3);
+}
+
 .hashtag-suggestions {
     position: absolute;
     top: 100%;
