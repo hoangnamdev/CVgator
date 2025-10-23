@@ -1335,6 +1335,45 @@ async function initializeSampleData() {
   }
 }
 
+// PDF download endpoint with proper headers
+app.get('/download-cv/:postId', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const post = await Post.findById(postId);
+    
+    if (!post || !post.link) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'CV not found' 
+      });
+    }
+    
+    // Fetch the PDF from Cloudinary
+    const response = await fetch(post.link);
+    if (!response.ok) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'CV file not found' 
+      });
+    }
+    
+    const pdfBuffer = await response.buffer();
+    
+    // Set proper headers for PDF download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="CV.pdf"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+    
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error('Error serving PDF:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error downloading CV' 
+    });
+  }
+});
+
 // Set up periodic hashtag usage count updates (every 6 hours)
 setInterval(updateHashtagUsageCounts, 6 * 60 * 60 * 1000);
 

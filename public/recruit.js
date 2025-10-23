@@ -280,7 +280,7 @@ function createCandidateCard(recruit) {
         <div class="cv-preview">
             <div class="cv-icon">📄</div>
             <p class="cv-text">CV Document</p>
-            <button class="open-cv-btn" onclick="openCV('${recruit.postId.link}')">Open CV</button>
+            <button class="open-cv-btn" onclick="openCV('${recruit.postId._id}')">Open CV</button>
         </div>
         
         <button class="contact-btn" onclick="toggleContactInfo(this)">Contact</button>
@@ -295,11 +295,12 @@ function createCandidateCard(recruit) {
     return card;
 }
 
-function openCV(cvLink) {
-    // Create a temporary link element to download the file with proper extension
+function openCV(postId) {
+    // Use our server endpoint that serves PDFs with proper headers
+    const downloadUrl = `/download-cv/${postId}`;
     const link = document.createElement('a');
-    link.href = cvLink; // Use original Cloudinary URL
-    link.download = 'CV.pdf'; // Force download with .pdf extension
+    link.href = downloadUrl;
+    link.download = 'CV.pdf';
     link.target = '_blank';
     document.body.appendChild(link);
     link.click();

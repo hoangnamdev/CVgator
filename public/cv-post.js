@@ -65,11 +65,12 @@ function displayCVPost(post) {
         cvLink.target = '_blank'; // Open in new tab
         
         // Update the CV view section with proper link
+        const postId = sessionStorage.getItem('currentPostId');
         cvDocumentContent.innerHTML = `
             <div class="cv-icon">📄</div>
             <h3>CV Document</h3>
             <p>Click the button below to view the full CV</p>
-            <a href="${post.link}" id="cvLink" class="view-cv-btn" target="_blank" download="CV.pdf">View CV</a>
+            <a href="/download-cv/${postId}" id="cvLink" class="view-cv-btn" target="_blank" download="CV.pdf">View CV</a>
         `;
     } else {
         cvDocumentContent.innerHTML = `
