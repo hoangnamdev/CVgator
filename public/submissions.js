@@ -166,6 +166,8 @@ function toggleHashtagSelection(hashtagName, hashtagLink) {
 
 function updateSortButton() {
     let sortBtn = document.getElementById('sortBtn');
+    let clearBtn = document.getElementById('clearBtn');
+    
     if (!sortBtn) {
         // Create sort button if it doesn't exist
         const hashtagSidebar = document.querySelector('.hashtag-sidebar');
@@ -186,6 +188,26 @@ function updateSortButton() {
         `;
         sortBtn.addEventListener('click', sortBySelectedTags);
         hashtagSidebar.appendChild(sortBtn);
+        
+        // Create clear selection button
+        clearBtn = document.createElement('button');
+        clearBtn.id = 'clearBtn';
+        clearBtn.className = 'clear-btn';
+        clearBtn.textContent = 'Clear Selection';
+        clearBtn.style.cssText = `
+            width: 100%;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        `;
+        clearBtn.addEventListener('click', clearSelection);
+        hashtagSidebar.appendChild(clearBtn);
     }
     
     if (selectedHashtags.length > 0) {
@@ -239,4 +261,20 @@ function checkSelectedHashtags() {
             sortBySelectedTags();
         }
     }
+}
+
+function clearSelection() {
+    // Clear selected hashtags
+    selectedHashtags = [];
+    
+    // Remove active class from all hashtag links
+    document.querySelectorAll('.hashtag-link').forEach(link => {
+        link.classList.remove('active');
+    });
+    
+    // Show all posts
+    displayPosts(allPosts);
+    
+    // Update sort button
+    updateSortButton();
 }
