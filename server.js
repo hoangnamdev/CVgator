@@ -887,6 +887,9 @@ app.post('/api/delete-post', async (req, res) => {
     // Delete associated recruit if exists
     await Recruit.findOneAndDelete({ postId: postId });
     
+    // Delete all comments associated with this post
+    await Comment.deleteMany({ postId: postId });
+    
     // Delete the post
     await Post.findByIdAndDelete(postId);
     
@@ -950,10 +953,14 @@ app.post('/api/delete-account', async (req, res) => {
     // Delete user's published CV
     await Recruit.deleteMany({ authorId: userId });
     
+    // Delete comments on user's posts
+    const userPostIds = userPosts.map(post => post._id);
+    await Comment.deleteMany({ postId: { $in: userPostIds } });
+    
     // Delete user's posts
     await Post.deleteMany({ authorId: userId });
     
-    // Delete user's comments
+    // Delete user's comments (comments made by the user)
     await Comment.deleteMany({ authorId: userId });
     
     // Finally, delete the user account
