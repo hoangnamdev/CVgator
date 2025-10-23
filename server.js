@@ -537,7 +537,8 @@ app.get('/api/recruits', async (req, res) => {
       const tagFilters = [];
       
       if (experience) {
-        tagFilters.push(experience);
+        const experienceArray = experience.split(',');
+        tagFilters.push(...experienceArray);
       }
       
       if (technologies) {

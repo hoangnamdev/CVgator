@@ -2,7 +2,7 @@
 let allRecruits = [];
 let allHashtags = [];
 let selectedFilters = {
-  experience: null,
+  experience: [],
   technologies: [],
   fields: []
 };
@@ -144,13 +144,15 @@ function setupFilterPanel() {
             console.log('Filter clicked:', filter, value); // Debug log
             
             if (filter === 'experience') {
-                // Only one experience level can be selected
-                document.querySelectorAll('[data-filter="experience"]').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
-                e.target.classList.add('selected');
-                selectedFilters.experience = value;
-                console.log('Selected experience:', value); // Debug log
+                e.target.classList.toggle('selected');
+                if (e.target.classList.contains('selected')) {
+                    if (!selectedFilters.experience.includes(value)) {
+                        selectedFilters.experience.push(value);
+                    }
+                } else {
+                    selectedFilters.experience = selectedFilters.experience.filter(v => v !== value);
+                }
+                console.log('Selected experience:', selectedFilters.experience); // Debug log
             } else if (filter === 'technologies') {
                 e.target.classList.toggle('selected');
                 if (e.target.classList.contains('selected')) {
@@ -178,7 +180,7 @@ function setupFilterPanel() {
     // Clear filters
     clearFiltersBtn.addEventListener('click', function() {
         selectedFilters = {
-            experience: null,
+            experience: [],
             technologies: [],
             fields: []
         };
@@ -201,8 +203,8 @@ async function applyFilters() {
     try {
         const params = new URLSearchParams();
         
-        if (selectedFilters.experience) {
-            params.append('experience', selectedFilters.experience);
+        if (selectedFilters.experience.length > 0) {
+            params.append('experience', selectedFilters.experience.join(','));
         }
         
         if (selectedFilters.technologies.length > 0) {
