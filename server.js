@@ -1403,12 +1403,12 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
     );
     }
 
-    // Get current date in DDMMYY format
+    // Get current date in DD/MM/YY format
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = String(now.getFullYear()).slice(-2);
-    const dateString = day + month + year;
+    const dateString = day + '/' + month + '/' + year;
 
     // Get author information from request (should come from frontend authentication)
     const { authorName, authorId } = req.body;
@@ -1613,7 +1613,7 @@ async function initializeSampleData() {
         {
           title: "Software Engineer CV - Looking for feedback on technical skills section",
           name: "john_doe",
-          date: "231023",
+          date: "23/10/23",
           link: "/uploads/sample-cv-1.pdf",
           text: "I'm a recent computer science graduate looking to break into the software engineering field. I'd appreciate feedback on my technical skills section and any suggestions for improvement. I'm particularly interested in full-stack development roles.",
           tags: ["#software-engineer", "#tech", "#entry-level"],
@@ -1622,7 +1622,7 @@ async function initializeSampleData() {
         {
           title: "Marketing Manager Resume - Need help with quantifiable achievements",
           name: "sarah_smith",
-          date: "231023",
+          date: "23/10/23",
           link: "/uploads/sample-cv-2.pdf",
           text: "I have 5+ years of experience in digital marketing and I'm looking to transition into a management role. I need help making my achievements more quantifiable and impactful. Any advice on structuring my experience section would be greatly appreciated.",
           tags: ["#marketing", "#manager", "#senior"],
@@ -1631,7 +1631,7 @@ async function initializeSampleData() {
         {
           title: "UX Designer Portfolio - Seeking advice on project descriptions",
           name: "mike_wilson",
-          date: "221023",
+          date: "22/10/23",
           link: "/uploads/sample-cv-3.pdf",
           text: "I'm a UX designer with 3 years of experience looking to improve my portfolio presentation. I'd like feedback on how I describe my design process and project outcomes. I'm targeting senior UX positions.",
           tags: ["#design", "#ux", "#portfolio"],
@@ -1640,7 +1640,7 @@ async function initializeSampleData() {
         {
           title: "Data Scientist CV - How to highlight machine learning projects?",
           name: "alex_chen",
-          date: "211023",
+          date: "21/10/23",
           link: "/uploads/sample-cv-4.pdf",
           text: "I have a strong background in data science and machine learning, but I'm struggling to effectively communicate my technical projects on my CV. I need help highlighting my ML models and their business impact.",
           tags: ["#data-science", "#machine-learning", "#tech"],
@@ -1649,7 +1649,7 @@ async function initializeSampleData() {
         {
           title: "Sales Representative Resume - Tips for showcasing results",
           name: "emma_brown",
-          date: "201023",
+          date: "20/10/23",
           link: "/uploads/sample-cv-5.pdf",
           text: "I'm in sales and want to move into a more strategic role. I need help quantifying my sales achievements and presenting my results in a compelling way. Looking for advice on structuring my sales metrics.",
           tags: ["#sales", "#results", "#entry-level"],
@@ -1658,7 +1658,7 @@ async function initializeSampleData() {
         {
           title: "UI/UX Designer working with Figma",
           name: "Stephan0",
-          date: "111025",
+          date: "11/10/25",
           link: "Placeholder",
           text: "I'm looking for suggestions on what changes I can make to polish my CV! I work primarily with Figma, and most of the times I work with web projects. You can check out my work below, and let me know if my bulletpoints are relevant or optimal.",
           tags: ["#ui-ux", "#figma", "#web-design"],
