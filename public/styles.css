@@ -759,9 +759,19 @@ textarea:focus {
 }
 
 /* Hashtags Page Styles */
-.hashtags-header-box {
+.hashtags-page-container {
     max-width: 1200px;
-    margin: 20px auto;
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hashtags-header-box {
+    width: 100%;
+    max-width: 800px;
+    margin: 20px 0;
     padding: 30px;
     background: white;
     border-radius: 12px;
@@ -793,9 +803,10 @@ textarea:focus {
 }
 
 .hashtags-section {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .hashtags-controls {
@@ -879,11 +890,10 @@ textarea:focus {
 
 .hashtags-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 200px);
     gap: 20px;
     padding: 20px 0;
-    max-width: 1000px;
-    margin: 0 auto;
+    justify-content: center;
 }
 
 .hashtag-card {
@@ -896,6 +906,12 @@ textarea:focus {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    width: 200px;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .hashtag-card::before {
@@ -967,14 +983,14 @@ textarea:focus {
     }
     
     .hashtags-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, 200px);
         gap: 15px;
     }
 }
 
 @media (max-width: 480px) {
     .hashtags-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 200px;
         gap: 10px;
     }
 }
