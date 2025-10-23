@@ -1,6 +1,6 @@
 # CVgator
 
-A CV sharing platform with discussion and business features.
+A forum-style platform for peer-reviewing CVs. Upload, get feedback, and become part of a network of job-seekers and recruiters alike.
 
 ## Features
 
