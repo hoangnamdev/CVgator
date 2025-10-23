@@ -7,6 +7,8 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const pdfParse = require('pdf-parse');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,6 +19,9 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
+
+// Google Gemini AI configuration
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Middleware
 app.use(cors());
@@ -142,6 +147,11 @@ const postSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  aiFeedback: {
+    type: String,
+    trim: true,
+    default: ''
   }
 }, {
   timestamps: true
@@ -245,6 +255,46 @@ function validateUsername(username) {
 function validatePassword(password) {
   const passwordRegex = /^[a-zA-Z0-9]+$/;
   return passwordRegex.test(password) && password.length >= 6;
+}
+
+// AI Feedback Generation Function
+async function generateAIFeedback(pdfBuffer, title, context) {
+  try {
+    // Extract text from PDF
+    const pdfData = await pdfParse(pdfBuffer);
+    const cvText = pdfData.text;
+    
+    // Truncate text if too long (Gemini has token limits)
+    const maxLength = 8000; // Leave room for prompt
+    const truncatedText = cvText.length > maxLength ? cvText.substring(0, maxLength) + '...' : cvText;
+    
+    // Create AI prompt
+    const prompt = `Please analyze this CV and provide constructive feedback. Focus on:
+
+1. **Strengths**: What are the candidate's key strengths and achievements?
+2. **Areas for Improvement**: What could be enhanced or added?
+3. **Overall Assessment**: How well does this CV present the candidate?
+4. **Specific Suggestions**: Any specific recommendations for improvement?
+
+CV Title: ${title}
+Additional Context: ${context || 'No additional context provided'}
+
+CV Content:
+${truncatedText}
+
+Please provide a professional, constructive analysis in 2-3 paragraphs. Be specific and actionable in your feedback.`;
+
+    // Generate AI response
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const aiFeedback = response.text();
+    
+    return aiFeedback;
+  } catch (error) {
+    console.error('Error generating AI feedback:', error);
+    return 'AI feedback is currently unavailable. Please try again later.';
+  }
 }
 
 // Routes
@@ -1156,6 +1206,11 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
       });
     }
 
+    // Generate AI feedback
+    console.log('Generating AI feedback for CV...');
+    const aiFeedback = await generateAIFeedback(cvFile.buffer, title.trim(), context.trim());
+    console.log('AI feedback generated successfully');
+
     // Create new post
     const post = new Post({
       title: title.trim(),
@@ -1164,7 +1219,8 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
       link: cloudinaryResult.secure_url,
       text: context.trim(),
       tags: formattedTags,
-      authorId: new mongoose.Types.ObjectId(authorId)
+      authorId: new mongoose.Types.ObjectId(authorId),
+      aiFeedback: aiFeedback
     });
 
     await post.save();
