@@ -7,8 +7,16 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const pdfParse = require('pdf-parse');
+// Optional AI dependencies
+let GoogleGenerativeAI, pdfParse;
+try {
+  GoogleGenerativeAI = require('@google/generative-ai').GoogleGenerativeAI;
+  pdfParse = require('pdf-parse');
+  console.log('AI dependencies loaded successfully');
+} catch (error) {
+  console.error('Failed to load AI dependencies:', error);
+  console.log('AI features will be disabled');
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,8 +28,19 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Google Gemini AI configuration
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Google Gemini AI configuration (optional)
+let genAI = null;
+try {
+  if (GoogleGenerativeAI && process.env.GEMINI_API_KEY) {
+    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    console.log('Gemini AI initialized successfully');
+  } else {
+    console.log('Gemini API key not provided or dependencies not available, AI features disabled');
+  }
+} catch (error) {
+  console.error('Failed to initialize Gemini AI:', error);
+  console.log('AI features will be disabled');
+}
 
 // Middleware
 app.use(cors());
@@ -265,10 +284,10 @@ function validatePassword(password) {
 // AI Feedback Generation Function
 async function generateAIFeedback(pdfBuffer, title, context) {
   try {
-    // Check if Gemini API key is available
-    if (!process.env.GEMINI_API_KEY) {
-      console.log('Gemini API key not configured, skipping AI feedback');
-      return 'AI feedback is not configured.';
+    // Check if AI dependencies are available
+    if (!genAI || !pdfParse || !process.env.GEMINI_API_KEY) {
+      console.log('AI dependencies not available, skipping AI feedback');
+      return 'AI feedback is not available.';
     }
 
     // Extract text from PDF
