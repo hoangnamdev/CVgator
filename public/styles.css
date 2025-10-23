@@ -1423,7 +1423,7 @@ textarea:focus {
 
 /* Publish CV Page Styles */
 .publish-cv-container {
-    max-width: 600px;
+    max-width: 1000px;
     margin: 60px auto 0 auto;
     padding: 30px 80px;
 }
