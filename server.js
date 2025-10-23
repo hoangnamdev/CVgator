@@ -237,10 +237,6 @@ app.get('/cv-post', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'cv-post.html'));
 });
 
-app.get('/recruit', (req, res) => {
-  res.send('Recruit page - Coming soon!');
-});
-
 app.get('/mission', (req, res) => {
   res.send('Mission page - Coming soon!');
 });
