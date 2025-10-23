@@ -581,16 +581,10 @@ app.post('/api/publish-cv', async (req, res) => {
       });
     }
     
-    // Check if already published
-    const existingRecruit = await Recruit.findOne({ postId: cvSelect });
-    if (existingRecruit) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'This CV is already published' 
-      });
-    }
+    // Remove any existing published CVs for this user (only one publish per user allowed)
+    await Recruit.deleteMany({ authorId: post.authorId });
     
-    // Create recruit entry
+    // Create new recruit entry
     const recruit = new Recruit({
       name: fullName.trim(),
       contactInformation: contactInfo.trim(),
@@ -602,7 +596,7 @@ app.post('/api/publish-cv', async (req, res) => {
     
     res.json({ 
       success: true, 
-      message: 'CV published successfully',
+      message: 'CV published successfully! Any previous publish has been replaced.',
       recruit: {
         _id: recruit._id,
         name: recruit.name,
