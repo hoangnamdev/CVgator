@@ -529,6 +529,9 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
 
     await post.save();
 
+    // Update hashtag usage counts after new post is created
+    await updateHashtagUsageCounts();
+
     res.json({ 
       success: true, 
       message: 'CV uploaded successfully',
@@ -558,6 +561,46 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
   }
 });
 
+// Function to update hashtag usage counts based on actual posts
+async function updateHashtagUsageCounts() {
+  try {
+    console.log('Updating hashtag usage counts...');
+    
+    // Get all posts and count hashtag usage
+    const posts = await Post.find({}, 'tags');
+    const hashtagCounts = {};
+    
+    // Count usage of each hashtag
+    posts.forEach(post => {
+      if (post.tags && Array.isArray(post.tags)) {
+        post.tags.forEach(tag => {
+          // Remove # prefix if present
+          const tagName = tag.replace('#', '').toLowerCase();
+          hashtagCounts[tagName] = (hashtagCounts[tagName] || 0) + 1;
+        });
+      }
+    });
+    
+    // Update hashtag usage counts in database
+    for (const [tagName, count] of Object.entries(hashtagCounts)) {
+      await Hashtag.updateOne(
+        { name: tagName },
+        { usageCount: count }
+      );
+    }
+    
+    // Reset usage count for hashtags not used in any posts
+    await Hashtag.updateMany(
+      { name: { $nin: Object.keys(hashtagCounts) } },
+      { usageCount: 0 }
+    );
+    
+    console.log('Hashtag usage counts updated successfully!');
+  } catch (error) {
+    console.error('Error updating hashtag usage counts:', error);
+  }
+}
+
 // Initialize sample data if no posts exist
 async function initializeSampleData() {
   try {
@@ -585,6 +628,9 @@ async function initializeSampleData() {
       await Hashtag.insertMany(hashtagDocs);
       console.log('Sample hashtags created successfully!');
     }
+    
+    // Update hashtag usage counts on server start
+    await updateHashtagUsageCounts();
     
     const postCount = await Post.countDocuments();
     if (postCount === 0) {
@@ -677,6 +723,9 @@ async function initializeSampleData() {
     console.error('Error initializing sample data:', error);
   }
 }
+
+// Set up periodic hashtag usage count updates (every 6 hours)
+setInterval(updateHashtagUsageCounts, 6 * 60 * 60 * 1000); // 6 hours in milliseconds
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

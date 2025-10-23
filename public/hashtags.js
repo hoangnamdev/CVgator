@@ -65,10 +65,10 @@ function updateSortButton() {
     const sortBtn = document.getElementById('sortBtn');
     if (selectedHashtags.length > 0) {
         sortBtn.disabled = false;
-        sortBtn.textContent = `Sort (${selectedHashtags.length})`;
+        sortBtn.textContent = `Select (${selectedHashtags.length})`;
     } else {
         sortBtn.disabled = true;
-        sortBtn.textContent = 'Sort';
+        sortBtn.textContent = 'Select';
     }
 }
 
