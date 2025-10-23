@@ -24,17 +24,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    // Generate unique filename with timestamp
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'cv-' + uniqueSuffix + '.pdf');
-  }
-});
+// Configure multer for file uploads (memory storage for Cloudinary)
+const storage = multer.memoryStorage();
 
 // File filter to only allow PDF files
 const fileFilter = (req, file, cb) => {
@@ -53,16 +44,8 @@ const upload = multer({
   }
 });
 
-// Configure multer for profile picture uploads
-const profileStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'profile-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Configure multer for profile picture uploads (memory storage for Cloudinary)
+const profileStorage = multer.memoryStorage();
 
 const profileFileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|gif|webp/;
@@ -84,12 +67,7 @@ const profileUpload = multer({
   }
 });
 
-// Create uploads directory if it doesn't exist
-const fs = require('fs');
-const uploadsDir = 'uploads';
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
+// Note: No longer need local uploads directory since we're using Cloudinary
 
 // MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/cvgator';
@@ -779,14 +757,37 @@ app.post('/api/update-profile', profileUpload.single('profilePicture'), async (r
     
     // Update profile picture if provided
     if (profilePictureFile) {
-      // Delete old profile picture if it exists
+      // Upload new profile picture to Cloudinary
+      let cloudinaryResult;
+      try {
+        cloudinaryResult = await cloudinary.uploader.upload(
+          `data:${profilePictureFile.mimetype};base64,${profilePictureFile.buffer.toString('base64')}`,
+          {
+            folder: 'cvgator/profiles',
+            use_filename: true,
+            unique_filename: true
+          }
+        );
+      } catch (uploadError) {
+        console.error('Cloudinary upload error:', uploadError);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Failed to upload profile picture' 
+        });
+      }
+      
+      // Delete old profile picture from Cloudinary if it exists
       if (user.profilePicture && user.profilePicture !== '/uploads/default-avatar.svg') {
-        const oldPicturePath = user.profilePicture.replace('/uploads/', 'uploads/');
-        if (fs.existsSync(oldPicturePath)) {
-          fs.unlinkSync(oldPicturePath);
+        try {
+          // Extract public_id from old Cloudinary URL
+          const oldPublicId = user.profilePicture.split('/').pop().split('.')[0];
+          await cloudinary.uploader.destroy(`cvgator/profiles/${oldPublicId}`);
+        } catch (deleteError) {
+          console.error('Failed to delete old profile picture:', deleteError);
         }
       }
-      user.profilePicture = `/uploads/${profilePictureFile.filename}`;
+      
+      user.profilePicture = cloudinaryResult.secure_url;
     }
     
     await user.save();
@@ -886,11 +887,14 @@ app.post('/api/delete-post', async (req, res) => {
       });
     }
     
-    // Delete the CV file
-    if (post.link) {
-      const filePath = post.link.replace('/uploads/', 'uploads/');
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+    // Delete the CV file from Cloudinary
+    if (post.link && post.link.includes('cloudinary.com')) {
+      try {
+        // Extract public_id from Cloudinary URL
+        const publicId = post.link.split('/').slice(-2).join('/').split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
+      } catch (deleteError) {
+        console.error('Failed to delete file from Cloudinary:', deleteError);
       }
     }
     
@@ -941,22 +945,28 @@ app.post('/api/delete-account', async (req, res) => {
       });
     }
     
-    // Delete user's posts and associated files
+    // Delete user's posts and associated files from Cloudinary
     const userPosts = await Post.find({ authorId: userId });
     for (const post of userPosts) {
-      if (post.link) {
-        const filePath = post.link.replace('/uploads/', 'uploads/');
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
+      if (post.link && post.link.includes('cloudinary.com')) {
+        try {
+          // Extract public_id from Cloudinary URL
+          const publicId = post.link.split('/').slice(-2).join('/').split('.')[0];
+          await cloudinary.uploader.destroy(publicId);
+        } catch (deleteError) {
+          console.error('Failed to delete file from Cloudinary:', deleteError);
         }
       }
     }
     
-    // Delete user's profile picture if it exists
-    if (user.profilePicture && user.profilePicture !== '/uploads/default-avatar.svg') {
-      const profilePicturePath = user.profilePicture.replace('/uploads/', 'uploads/');
-      if (fs.existsSync(profilePicturePath)) {
-        fs.unlinkSync(profilePicturePath);
+    // Delete user's profile picture from Cloudinary if it exists
+    if (user.profilePicture && user.profilePicture !== '/uploads/default-avatar.svg' && user.profilePicture.includes('cloudinary.com')) {
+      try {
+        // Extract public_id from Cloudinary URL
+        const publicId = user.profilePicture.split('/').slice(-2).join('/').split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
+      } catch (deleteError) {
+        console.error('Failed to delete profile picture from Cloudinary:', deleteError);
       }
     }
     
@@ -994,10 +1004,6 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
 
     // Validate all required fields
     if (!title || !hashtags || !context || !cvFile) {
-      // Delete uploaded file if validation fails
-      if (cvFile) {
-        fs.unlinkSync(cvFile.path);
-      }
       return res.status(400).json({ 
         success: false, 
         message: 'All fields are required' 
@@ -1006,11 +1012,29 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
 
     // Validate file type (server-side validation)
     if (cvFile.mimetype !== 'application/pdf') {
-      // Delete uploaded file if invalid type
-      fs.unlinkSync(cvFile.path);
       return res.status(400).json({ 
         success: false, 
         message: 'Only PDF files are allowed' 
+      });
+    }
+
+    // Upload file to Cloudinary
+    let cloudinaryResult;
+    try {
+      cloudinaryResult = await cloudinary.uploader.upload(
+        `data:${cvFile.mimetype};base64,${cvFile.buffer.toString('base64')}`,
+        {
+          folder: 'cvgator/cvs',
+          resource_type: 'raw',
+          use_filename: true,
+          unique_filename: true
+        }
+      );
+    } catch (uploadError) {
+      console.error('Cloudinary upload error:', uploadError);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Failed to upload file to cloud storage' 
       });
     }
 
@@ -1026,8 +1050,12 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
     
     const invalidTags = tagNames.filter(tag => !existingTagNames.includes(tag));
     if (invalidTags.length > 0) {
-      // Delete uploaded file if validation fails
-      fs.unlinkSync(cvFile.path);
+      // Delete uploaded file from Cloudinary if validation fails
+      try {
+        await cloudinary.uploader.destroy(cloudinaryResult.public_id);
+      } catch (deleteError) {
+        console.error('Failed to delete file from Cloudinary:', deleteError);
+      }
       return res.status(400).json({ 
         success: false, 
         message: 'You\'re using an invalid hashtag!' 
@@ -1053,8 +1081,12 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
     const { authorName, authorId } = req.body;
 
     if (!authorId) {
-      // Delete uploaded file if no author ID
-      fs.unlinkSync(cvFile.path);
+      // Delete uploaded file from Cloudinary if no author ID
+      try {
+        await cloudinary.uploader.destroy(cloudinaryResult.public_id);
+      } catch (deleteError) {
+        console.error('Failed to delete file from Cloudinary:', deleteError);
+      }
       return res.status(400).json({ 
         success: false, 
         message: 'User authentication required' 
@@ -1066,7 +1098,7 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
       title: title.trim(),
       name: authorName,
       date: dateString,
-      link: `/uploads/${cvFile.filename}`,
+      link: cloudinaryResult.secure_url,
       text: context.trim(),
       tags: formattedTags,
       authorId: new mongoose.Types.ObjectId(authorId)
@@ -1094,10 +1126,7 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
   } catch (error) {
     console.error('Upload error:', error);
     
-    // Delete uploaded file if there's an error
-    if (req.file) {
-      fs.unlinkSync(req.file.path);
-    }
+    // Note: No need to delete file from memory storage on error
     
     res.status(500).json({ 
       success: false, 
