@@ -20,7 +20,7 @@ try {
 }
 
 try {
-  pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
+  pdfjsLib = require('pdfjs-dist');
   console.log('pdfjsLib loaded successfully');
 } catch (error) {
   console.log('pdfjsLib not available:', error.message);
@@ -1622,38 +1622,6 @@ app.get('/download-cv/:postId', async (req, res) => {
     
     request.on('error', (error) => {
       console.error('Error fetching PDF from Cloudinary:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Error downloading CV' 
-      });
-    });
-    
-    request.end();
-  } catch (error) {
-    console.error('Error serving PDF:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Error downloading CV' 
-    });
-  }
-});
-
-// Set up periodic hashtag usage count updates (every 6 hours)
-setInterval(updateHashtagUsageCounts, 6 * 60 * 60 * 1000);
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Health check available at: http://localhost:${PORT}/api/health`);
-  
-  // Only initialize sample data in development (non-blocking)
-  if (process.env.NODE_ENV !== 'production') {
-    initializeSampleData().catch(err => {
-      console.error('Sample data initialization failed:', err);
-      console.log('Server continues without sample data');
-    });
-  }
-});
-
       res.status(500).json({ 
         success: false, 
         message: 'Error downloading CV' 
