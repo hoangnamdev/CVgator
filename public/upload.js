@@ -123,6 +123,7 @@ function setupFormSubmission() {
         formData.append('context', context);
         formData.append('cvFile', cvFile);
         formData.append('authorName', userData.username);
+        formData.append('authorId', userData.id);
         
         try {
             const response = await fetch('/api/upload-cv', {

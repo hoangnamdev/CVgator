@@ -684,7 +684,16 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
     const dateString = day + month + year;
 
     // Get author information from request (should come from frontend authentication)
-    const { authorName } = req.body;
+    const { authorName, authorId } = req.body;
+
+    if (!authorId) {
+      // Delete uploaded file if no author ID
+      fs.unlinkSync(cvFile.path);
+      return res.status(400).json({ 
+        success: false, 
+        message: 'User authentication required' 
+      });
+    }
 
     // Create new post
     const post = new Post({
@@ -694,7 +703,7 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
       link: `/uploads/${cvFile.filename}`,
       text: context.trim(),
       tags: formattedTags,
-      authorId: new mongoose.Types.ObjectId()
+      authorId: new mongoose.Types.ObjectId(authorId)
     });
 
     await post.save();

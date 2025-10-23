@@ -1003,7 +1003,7 @@ textarea:focus {
 /* Recruit Page Styles */
 .recruit-container {
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 40px auto 0 auto;
     padding: 20px 40px;
 }
 
@@ -1378,7 +1378,7 @@ textarea:focus {
 /* Publish CV Page Styles */
 .publish-cv-container {
     max-width: 600px;
-    margin: 0 auto;
+    margin: 40px auto 0 auto;
     padding: 20px 40px;
 }
 
