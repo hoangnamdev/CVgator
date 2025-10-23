@@ -331,7 +331,7 @@ async function generateAIFeedback(pdfBuffer, title, context) {
     const truncatedText = cvText.length > maxLength ? cvText.substring(0, maxLength) + '...' : cvText;
     
     // Create AI prompt
-    const prompt = `Please analyze this CV and provide constructive feedback. Focus on:
+    const prompt = `Please analyze this CV and provide constructive feedback using markdown formatting. Focus on:
 
 1. **Strengths**: What are the candidate's key strengths and achievements?
 2. **Areas for Improvement**: What could be enhanced or added?
@@ -344,7 +344,14 @@ Additional Context: ${context || 'No additional context provided'}
 CV Content:
 ${truncatedText}
 
-Please provide a professional, constructive analysis in 2-3 paragraphs. Be specific and actionable in your feedback.`;
+Please provide a professional, constructive analysis using markdown formatting:
+- Use **bold** for emphasis on key points
+- Use *italics* for subtle emphasis
+- Use bullet points (-) for lists
+- Use line breaks for better readability
+- Use ## for section headers if needed
+
+Be specific and actionable in your feedback.`;
 
     // Generate AI response with timeout
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);

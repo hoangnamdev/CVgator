@@ -48,12 +48,13 @@ function displayCVPost(post) {
         contextText.innerHTML = '<em>No additional context provided by the author.</em>';
     }
     
-    // Update AI feedback section
-    const aiCommentElement = document.querySelector('.ai-comment p');
+    // Update AI feedback section with markdown rendering
+    const aiCommentElement = document.getElementById('aiCommentContent');
     if (post.aiFeedback && post.aiFeedback.trim()) {
-        aiCommentElement.textContent = post.aiFeedback;
+        // Render markdown to HTML
+        aiCommentElement.innerHTML = marked.parse(post.aiFeedback);
     } else {
-        aiCommentElement.textContent = 'AI feedback is currently unavailable for this CV.';
+        aiCommentElement.innerHTML = '<em>AI feedback is currently unavailable for this CV.</em>';
     }
     
     // Update CV link or show placeholder
