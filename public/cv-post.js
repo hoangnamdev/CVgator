@@ -2,7 +2,52 @@
 document.addEventListener('DOMContentLoaded', function() {
     loadCVPost();
     loadComments();
+    
+    // Check for AI feedback updates every 5 seconds if it's still being generated
+    checkAIFeedbackUpdates();
 });
+
+// Check for AI feedback updates
+function checkAIFeedbackUpdates() {
+    const aiCommentElement = document.getElementById('aiCommentContent');
+    if (aiCommentElement && aiCommentElement.textContent.includes('AI is analyzing')) {
+        // Set up periodic checking
+        const checkInterval = setInterval(async () => {
+            const postId = sessionStorage.getItem('currentPostId');
+            if (!postId) {
+                clearInterval(checkInterval);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/posts/${postId}`);
+                const data = await response.json();
+                
+                if (data.success && data.post.aiFeedback) {
+                    const currentFeedback = data.post.aiFeedback;
+                    
+                    // If AI feedback is no longer "being generated", update the display
+                    if (currentFeedback !== 'AI feedback is being generated...') {
+                        clearInterval(checkInterval);
+                        
+                        if (currentFeedback === 'AI feedback is currently unavailable.') {
+                            aiCommentElement.innerHTML = '<em>AI feedback is currently unavailable for this CV.</em>';
+                        } else {
+                            aiCommentElement.innerHTML = marked.parse(currentFeedback);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking AI feedback updates:', error);
+            }
+        }, 5000); // Check every 5 seconds
+        
+        // Stop checking after 2 minutes
+        setTimeout(() => {
+            clearInterval(checkInterval);
+        }, 120000);
+    }
+}
 
 async function loadCVPost() {
     const postId = sessionStorage.getItem('currentPostId');
@@ -51,8 +96,24 @@ function displayCVPost(post) {
     // Update AI feedback section with markdown rendering
     const aiCommentElement = document.getElementById('aiCommentContent');
     if (post.aiFeedback && post.aiFeedback.trim()) {
-        // Render markdown to HTML
-        aiCommentElement.innerHTML = marked.parse(post.aiFeedback);
+        if (post.aiFeedback === 'AI feedback is being generated...') {
+            // Show loading state
+            aiCommentElement.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <span>AI is analyzing your CV and generating feedback...</span>
+                </div>
+                <style>
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                </style>
+            `;
+        } else {
+            // Render markdown to HTML
+            aiCommentElement.innerHTML = marked.parse(post.aiFeedback);
+        }
     } else {
         aiCommentElement.innerHTML = '<em>AI feedback is currently unavailable for this CV.</em>';
     }

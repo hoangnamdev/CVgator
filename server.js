@@ -402,6 +402,35 @@ Be specific, actionable, and constructive in your feedback.`;
   }
 }
 
+// Asynchronous AI feedback generation (runs in background)
+async function generateAIFeedbackAsync(postId, pdfBuffer, title, context) {
+  try {
+    console.log(`Starting background AI feedback generation for post ${postId}...`);
+    
+    // Generate the AI feedback
+    const aiFeedback = await generateAIFeedback(pdfBuffer, title, context);
+    
+    // Update the post with the generated feedback
+    await updatePostAIFeedback(postId, aiFeedback);
+    
+    console.log(`AI feedback generated and saved for post ${postId}`);
+  } catch (error) {
+    console.error(`Error in background AI feedback generation for post ${postId}:`, error);
+    // Update with error message
+    await updatePostAIFeedback(postId, 'AI feedback is currently unavailable.');
+  }
+}
+
+// Update post with AI feedback
+async function updatePostAIFeedback(postId, aiFeedback) {
+  try {
+    await Post.findByIdAndUpdate(postId, { aiFeedback: aiFeedback });
+    console.log(`Updated AI feedback for post ${postId}`);
+  } catch (error) {
+    console.error(`Error updating AI feedback for post ${postId}:`, error);
+  }
+}
+
 // Health check endpoint for Railway
 app.get('/api/health', (req, res) => {
   try {
@@ -1340,19 +1369,8 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
       });
     }
 
-    // Generate AI feedback (non-blocking with timeout)
-    let aiFeedback = '';
-    try {
-      console.log('Generating AI feedback for CV...');
-      aiFeedback = await Promise.race([
-        generateAIFeedback(cvFile.buffer, title.trim(), context.trim()),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('AI feedback timeout')), 45000)) // 45 second timeout
-      ]);
-      console.log('AI feedback generated successfully');
-    } catch (aiError) {
-      console.error('AI feedback generation failed:', aiError);
-      aiFeedback = 'AI feedback is currently unavailable. The CV has been uploaded successfully.';
-    }
+    // Set initial AI feedback message
+    let aiFeedback = 'AI feedback is being generated...';
 
     // Create new post
     const post = new Post({
@@ -1367,6 +1385,14 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
     });
 
     await post.save();
+
+    // Start AI feedback generation in background (don't await)
+    generateAIFeedbackAsync(post._id, cvFile.buffer, title.trim(), context.trim())
+      .catch(error => {
+        console.error('Background AI feedback generation failed:', error);
+        // Update the post with error message
+        updatePostAIFeedback(post._id, 'AI feedback is currently unavailable.');
+      });
 
     // Update hashtag usage counts after new post is created
     await updateHashtagUsageCounts();
