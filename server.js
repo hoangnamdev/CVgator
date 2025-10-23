@@ -331,12 +331,7 @@ async function generateAIFeedback(pdfBuffer, title, context) {
     const truncatedText = cvText.length > maxLength ? cvText.substring(0, maxLength) + '...' : cvText;
     
     // Create AI prompt
-    const prompt = `Please analyze this CV and provide constructive feedback using markdown formatting. Focus on:
-
-1. **Strengths**: What are the candidate's key strengths and achievements?
-2. **Areas for Improvement**: What could be enhanced or added?
-3. **Overall Assessment**: How well does this CV present the candidate?
-4. **Specific Suggestions**: Any specific recommendations for improvement?
+    const prompt = `Analyze this CV and provide feedback in the SAME LANGUAGE as the CV content. First, identify the primary language of the CV, then respond entirely in that language using markdown formatting.
 
 CV Title: ${title}
 Additional Context: ${context || 'No additional context provided'}
@@ -344,14 +339,47 @@ Additional Context: ${context || 'No additional context provided'}
 CV Content:
 ${truncatedText}
 
-Please provide a professional, constructive analysis using markdown formatting:
-- Use **bold** for emphasis on key points
-- Use *italics* for subtle emphasis
-- Use bullet points (-) for lists
-- Use line breaks for better readability
-- Use ## for section headers if needed
+Please provide a structured analysis in the CV's language, covering these specific areas:
 
-Be specific and actionable in your feedback.`;
+## **1. Why it is fitting (what works)**
+- What aspects make this CV suitable for its intended purpose?
+- What elements demonstrate competence and professionalism?
+
+## **2. Why is it not fitting (what doesn't work)**
+- What aspects detract from the CV's effectiveness?
+- What elements create negative impressions?
+
+## **3. What are the strengths?**
+- Key achievements and competencies
+- Well-presented sections
+- Professional highlights
+
+## **4. What are weaknesses that can be improved upon?**
+Categorize improvements by difficulty level:
+
+### **Easy to improve upon:**
+- Minor formatting issues
+- Simple content additions
+- Basic presentation improvements
+
+### **Medium to improve upon:**
+- Content restructuring
+- Skill presentation enhancements
+- Moderate formatting changes
+
+### **Hard to improve upon:**
+- Major content gaps
+- Fundamental structural issues
+- Significant experience limitations
+
+Use markdown formatting:
+- **bold** for emphasis
+- *italics* for subtle emphasis
+- bullet points (-) for lists
+- ## for section headers
+- ### for subsection headers
+
+Be specific, actionable, and constructive in your feedback.`;
 
     // Generate AI response with timeout
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
