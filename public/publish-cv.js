@@ -85,6 +85,8 @@ function setupFormSubmission() {
             userId: user.id
         };
         
+        console.log('Publishing CV with data:', data);
+        
         try {
             const response = await fetch('/api/publish-cv', {
                 method: 'POST',
@@ -95,9 +97,11 @@ function setupFormSubmission() {
             });
             
             const result = await response.json();
+            console.log('Publish CV response:', result);
             
             if (result.success) {
                 alert('CV published successfully!');
+                console.log('Redirecting to recruit page...');
                 window.location.href = '/recruit';
             } else {
                 alert('Error: ' + result.message);

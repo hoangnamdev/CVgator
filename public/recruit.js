@@ -31,11 +31,15 @@ function setupPublishCVButton() {
 
 async function loadRecruits() {
     try {
+        console.log('Loading recruits...');
         const response = await fetch('/api/recruits');
         const data = await response.json();
         
+        console.log('Recruits API response:', data);
+        
         if (data.success) {
             allRecruits = data.recruits;
+            console.log(`Loaded ${allRecruits.length} recruits:`, allRecruits.map(r => ({ id: r._id, name: r.name, authorId: r.authorId })));
             displayRecruits(allRecruits);
         } else {
             console.error('Error loading recruits:', data.message);
