@@ -1,3 +1,13 @@
+// Check if user is already logged in and redirect to submissions page
+document.addEventListener('DOMContentLoaded', function() {
+    const user = sessionStorage.getItem('user');
+    if (user) {
+        // User is already logged in, redirect to submissions page
+        window.location.href = '/submissions';
+        return;
+    }
+});
+
 // Login form handling
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
