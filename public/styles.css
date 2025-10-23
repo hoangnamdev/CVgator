@@ -994,6 +994,449 @@ textarea:focus {
         gap: 10px;
     }
 }
+
+/* Recruit Page Styles */
+.recruit-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.recruit-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.recruit-header h1 {
+    color: #333;
+    font-size: 2.5em;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.recruit-header p {
+    color: #666;
+    font-size: 1.1em;
+    margin: 0 0 20px 0;
+}
+
+.recruit-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.filter-icon {
+    transition: transform 0.3s ease;
+}
+
+.filter-btn.active .filter-icon {
+    transform: rotate(180deg);
+}
+
+.publish-cv-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.publish-cv-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.filter-panel {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e8f0ff;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.filter-panel.active {
+    max-height: 1000px;
+}
+
+.filter-section {
+    margin-bottom: 25px;
+}
+
+.filter-section h3 {
+    color: #333;
+    font-size: 1.2em;
+    font-weight: 600;
+    margin: 0 0 15px 0;
+}
+
+.filter-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filter-option {
+    background: white;
+    color: #667eea;
+    border: 2px solid #e8f0ff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-option:hover {
+    border-color: #667eea;
+    transform: translateY(-1px);
+}
+
+.filter-option.selected {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.filter-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e8f0ff;
+}
+
+.clear-filters-btn, .apply-filters-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.clear-filters-btn {
+    background: white;
+    color: #666;
+    border: 2px solid #ddd;
+}
+
+.clear-filters-btn:hover {
+    background: #f5f5f5;
+    transform: translateY(-1px);
+}
+
+.apply-filters-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.apply-filters-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.candidates-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.candidates-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.candidate-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e8f0ff;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.candidate-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.candidate-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.candidate-avatar {
+    flex-shrink: 0;
+}
+
+.avatar-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5em;
+    font-weight: 700;
+}
+
+.candidate-name {
+    color: #333;
+    font-size: 1.2em;
+    font-weight: 600;
+    margin: 0;
+}
+
+.cv-preview {
+    background: #f8f9ff;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 15px;
+    border: 2px solid #e8f0ff;
+}
+
+.cv-icon {
+    color: #667eea;
+    margin-bottom: 10px;
+    font-size: 2em;
+}
+
+.cv-text {
+    color: #333;
+    font-weight: 600;
+    margin: 0 0 15px 0;
+}
+
+.open-cv-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.open-cv-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.contact-btn {
+    width: 100%;
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.contact-btn:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.contact-bubble {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 5px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+}
+
+.contact-info h4 {
+    color: #333;
+    font-size: 1em;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+}
+
+.contact-info p {
+    color: #666;
+    font-size: 0.9em;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.no-candidates {
+    text-align: center;
+    color: #666;
+    font-size: 1.1em;
+    padding: 40px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e8f0ff;
+}
+
+/* Publish CV Page Styles */
+.publish-cv-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.publish-cv-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.publish-cv-header h1 {
+    color: #333;
+    font-size: 2.5em;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.publish-cv-header p {
+    color: #666;
+    font-size: 1.1em;
+    margin: 0;
+}
+
+.publish-cv-form {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e8f0ff;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e8f0ff;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.form-group select:disabled {
+    background: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.form-actions {
+    text-align: center;
+}
+
+.publish-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+}
+
+.publish-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.consent-text {
+    color: #999;
+    font-size: 0.9em;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Responsive design for recruit page */
+@media (max-width: 768px) {
+    .candidates-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .recruit-actions {
+        flex-direction: column;
+    }
+    
+    .filter-options {
+        justify-content: center;
+    }
+}
     
     .main-content {
         order: 1;
