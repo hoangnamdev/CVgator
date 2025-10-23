@@ -260,6 +260,12 @@ function validatePassword(password) {
 // AI Feedback Generation Function
 async function generateAIFeedback(pdfBuffer, title, context) {
   try {
+    // Check if Gemini API key is available
+    if (!process.env.GEMINI_API_KEY) {
+      console.log('Gemini API key not configured, skipping AI feedback');
+      return 'AI feedback is not configured.';
+    }
+
     // Extract text from PDF
     const pdfData = await pdfParse(pdfBuffer);
     const cvText = pdfData.text;
@@ -284,11 +290,17 @@ ${truncatedText}
 
 Please provide a professional, constructive analysis in 2-3 paragraphs. Be specific and actionable in your feedback.`;
 
-    // Generate AI response
+    // Generate AI response with timeout
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const aiFeedback = response.text();
+    
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('AI feedback timeout')), 30000); // 30 second timeout
+    });
+    
+    const aiPromise = model.generateContent(prompt).then(result => result.response.text());
+    
+    const aiFeedback = await Promise.race([aiPromise, timeoutPromise]);
     
     return aiFeedback;
   } catch (error) {
@@ -296,6 +308,15 @@ Please provide a professional, constructive analysis in 2-3 paragraphs. Be speci
     return 'AI feedback is currently unavailable. Please try again later.';
   }
 }
+
+// Health check endpoint for Railway
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
 
 // Routes
 app.get('/', (req, res) => {
@@ -1206,10 +1227,16 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
       });
     }
 
-    // Generate AI feedback
-    console.log('Generating AI feedback for CV...');
-    const aiFeedback = await generateAIFeedback(cvFile.buffer, title.trim(), context.trim());
-    console.log('AI feedback generated successfully');
+    // Generate AI feedback (non-blocking)
+    let aiFeedback = '';
+    try {
+      console.log('Generating AI feedback for CV...');
+      aiFeedback = await generateAIFeedback(cvFile.buffer, title.trim(), context.trim());
+      console.log('AI feedback generated successfully');
+    } catch (aiError) {
+      console.error('AI feedback generation failed:', aiError);
+      aiFeedback = 'AI feedback is currently unavailable.';
+    }
 
     // Create new post
     const post = new Post({
