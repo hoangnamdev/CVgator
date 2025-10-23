@@ -308,4 +308,25 @@ function toggleContactInfo(button) {
     // Toggle current bubble
     bubble.style.display = isVisible ? 'none' : 'block';
     console.log('Bubble display set to:', bubble.style.display); // Debug log
+    
+    // Debug positioning and dimensions
+    if (bubble.style.display === 'block') {
+        const rect = bubble.getBoundingClientRect();
+        console.log('Bubble position:', {
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height,
+            visible: rect.width > 0 && rect.height > 0
+        });
+        
+        // Force visibility with inline styles
+        bubble.style.position = 'absolute';
+        bubble.style.top = 'calc(100% + 10px)';
+        bubble.style.left = '0';
+        bubble.style.right = '0';
+        bubble.style.zIndex = '1000';
+        bubble.style.backgroundColor = 'yellow';
+        bubble.style.border = '3px solid red';
+    }
 }

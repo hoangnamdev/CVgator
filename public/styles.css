@@ -1210,6 +1210,7 @@ textarea:focus {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 25px;
+    overflow: visible;
 }
 
 .candidate-card {
@@ -1220,7 +1221,7 @@ textarea:focus {
     border: 1px solid #e8f0ff;
     transition: all 0.3s ease;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .candidate-card::before {
@@ -1338,19 +1339,22 @@ textarea:focus {
 
 .contact-bubble {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 10px);
     left: 0;
     right: 0;
     background: white;
     border: 2px solid #667eea;
     border-radius: 12px;
     padding: 20px;
-    margin-top: 10px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     max-width: 100%;
     word-wrap: break-word;
     animation: slideDown 0.3s ease;
+    min-height: 50px;
+    /* Debug styles - make it more visible */
+    border: 3px solid red !important;
+    background: yellow !important;
 }
 
 @keyframes slideDown {
