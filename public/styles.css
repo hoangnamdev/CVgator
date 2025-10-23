@@ -1237,8 +1237,11 @@ textarea:focus {
 }
 
 .candidate-card:hover {
-    transform: translateY(-6px);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.candidate-card:hover .contact-bubble {
+    z-index: 99999;
 }
 
 .candidate-card:hover::before {
@@ -1345,19 +1348,21 @@ textarea:focus {
 }
 
 .contact-bubble {
-    position: fixed;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
     background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
     border: 2px solid #667eea;
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-    max-width: 300px;
+    max-width: 100%;
     word-wrap: break-word;
     animation: slideDown 0.3s ease;
     min-height: 50px;
     transform-origin: top;
-    z-index: 99999;
-    pointer-events: auto;
+    z-index: 9999;
 }
 
 @keyframes slideDown {

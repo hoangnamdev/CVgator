@@ -322,17 +322,8 @@ function toggleContactInfo(button) {
             bubble.classList.remove('closing');
         }, 300); // Match animation duration
     } else {
-        // Open current bubble and position it
+        // Open current bubble
         bubble.style.display = 'block';
         button.classList.add('active');
-        
-        // Calculate position for fixed positioning
-        const buttonRect = button.getBoundingClientRect();
-        const cardRect = button.closest('.candidate-card').getBoundingClientRect();
-        
-        // Position the bubble below the card
-        bubble.style.top = (cardRect.bottom + 10) + 'px';
-        bubble.style.left = cardRect.left + 'px';
-        bubble.style.width = cardRect.width + 'px';
     }
 }
