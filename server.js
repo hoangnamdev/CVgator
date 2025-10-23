@@ -623,6 +623,32 @@ app.post('/api/publish-cv', async (req, res) => {
   }
 });
 
+// Debug endpoint to check database state
+app.get('/api/debug-recruits', async (req, res) => {
+  try {
+    const recruits = await Recruit.find({}).populate('postId');
+    const users = await User.find({});
+    
+    res.json({
+      success: true,
+      recruits: recruits.map(r => ({
+        id: r._id,
+        name: r.name,
+        authorId: r.authorId,
+        postId: r.postId?._id,
+        publishedAt: r.publishedAt
+      })),
+      users: users.map(u => ({
+        id: u._id,
+        username: u.username
+      }))
+    });
+  } catch (error) {
+    console.error('Debug error:', error);
+    res.status(500).json({ success: false, message: 'Debug error' });
+  }
+});
+
 // CV Upload API
 app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
   try {
