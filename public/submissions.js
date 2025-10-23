@@ -2,12 +2,36 @@ let allPosts = [];
 let allHashtags = [];
 let selectedHashtags = [];
 
+// Pagination variables
+let currentPage = 1;
+let postsPerPage = 20; // Default for desktop
+let filteredPosts = [];
+
 // Load posts when page loads
 document.addEventListener('DOMContentLoaded', function() {
+    // Set posts per page based on screen size
+    setPostsPerPage();
+    
     loadPostsFromDatabase();
     loadPopularHashtags();
     checkSelectedHashtags();
+    setupPaginationControls();
+    setupSortButton();
+    
+    // Update posts per page on window resize
+    window.addEventListener('resize', setPostsPerPage);
 });
+
+function setPostsPerPage() {
+    const screenWidth = window.innerWidth;
+    if (screenWidth <= 480) {
+        postsPerPage = 10; // Mobile
+    } else if (screenWidth <= 768) {
+        postsPerPage = 15; // Tablet
+    } else {
+        postsPerPage = 20; // Desktop
+    }
+}
 
 async function loadPostsFromDatabase() {
     try {
@@ -16,7 +40,8 @@ async function loadPostsFromDatabase() {
         
         if (data.success) {
             allPosts = data.posts;
-            displayPosts(allPosts);
+            filteredPosts = [...allPosts]; // Start with all posts
+            displayPosts();
         } else {
             console.error('Error loading posts:', data.message);
             displayError('Failed to load posts');
@@ -27,73 +52,120 @@ async function loadPostsFromDatabase() {
     }
 }
 
-function displayPosts(posts) {
+function displayPosts() {
     const postList = document.getElementById('postList');
     postList.innerHTML = '';
 
-    if (posts.length === 0) {
+    if (filteredPosts.length === 0) {
         postList.innerHTML = '<li class="post-item"><div class="post-title">No posts found</div></li>';
+        updatePaginationControls();
         return;
     }
 
-    posts.forEach(post => {
+    // Calculate pagination
+    const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+    const startIndex = (currentPage - 1) * postsPerPage;
+    const endIndex = Math.min(startIndex + postsPerPage, filteredPosts.length);
+    
+    // Get posts for current page
+    const postsToShow = filteredPosts.slice(startIndex, endIndex);
+
+    postsToShow.forEach(post => {
         const postElement = createPostElement(post);
         postList.appendChild(postElement);
+    });
+    
+    updatePaginationControls();
+}
+
+function updatePaginationControls() {
+    const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const paginationInfo = document.getElementById('paginationInfo');
+    
+    // Update button states
+    prevBtn.disabled = currentPage <= 1;
+    nextBtn.disabled = currentPage >= totalPages;
+    
+    // Update pagination info
+    if (filteredPosts.length === 0) {
+        paginationInfo.textContent = 'No posts';
+    } else {
+        const startIndex = (currentPage - 1) * postsPerPage + 1;
+        const endIndex = Math.min(currentPage * postsPerPage, filteredPosts.length);
+        paginationInfo.textContent = `Page ${currentPage} of ${totalPages} (${startIndex}-${endIndex} of ${filteredPosts.length})`;
+    }
+    
+    // Hide pagination if only one page
+    const paginationContainer = document.getElementById('paginationContainer');
+    if (totalPages <= 1) {
+        paginationContainer.style.display = 'none';
+    } else {
+        paginationContainer.style.display = 'flex';
+    }
+}
+
+function setupPaginationControls() {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            displayPosts();
+            // Scroll to top of posts
+            document.getElementById('postList').scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+    
+    nextBtn.addEventListener('click', () => {
+        const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            displayPosts();
+            // Scroll to top of posts
+            document.getElementById('postList').scrollIntoView({ behavior: 'smooth' });
+        }
     });
 }
 
 function displayError(message) {
     const postList = document.getElementById('postList');
     postList.innerHTML = `<li class="post-item"><div class="post-title">${message}</div></li>`;
+    updatePaginationControls();
 }
 
 function createPostElement(post) {
-    const li = document.createElement('li');
-    li.className = 'post-item';
-    li.onclick = () => openCVPost(post._id);
-
-    // Format date from DDMMYY to a more readable format
-    const formattedDate = formatDate(post.date);
-
-    li.innerHTML = `
-        <div class="post-title">${post.title}</div>
+    const postItem = document.createElement('li');
+    postItem.className = 'post-item';
+    
+    const tagsHtml = post.tags ? post.tags.map(tag => 
+        `<span class="post-tag">${tag}</span>`
+    ).join('') : '';
+    
+    postItem.innerHTML = `
+        <div class="post-header">
+            <h3 class="post-title">${post.title}</h3>
+            <span class="post-date">${post.date}</span>
+        </div>
         <div class="post-meta">
-            <span class="post-author">${post.name}</span>
-            <span class="post-date">${formattedDate}</span>
+            <span class="post-author">Posted by: <strong>${post.name}</strong></span>
+        </div>
+        <div class="post-tags">
+            ${tagsHtml}
+        </div>
+        <div class="post-actions">
+            <button class="view-btn" onclick="viewPost('${post._id}')">View Details</button>
         </div>
     `;
-
-    return li;
+    
+    return postItem;
 }
 
-function formatDate(dateString) {
-    // Convert DDMMYY format to readable format
-    if (dateString && dateString.length === 6) {
-        const day = dateString.substring(0, 2);
-        const month = dateString.substring(2, 4);
-        const year = '20' + dateString.substring(4, 6);
-        return `${day}/${month}/${year}`;
-    }
-    return dateString || 'Unknown date';
-}
-
-function openCVPost(postId) {
-    // Store the post ID in sessionStorage for the CV post page to use
+function viewPost(postId) {
     sessionStorage.setItem('currentPostId', postId);
     window.location.href = '/cv-post';
-}
-
-
-function filterPostsByHashtag(hashtag) {
-    const filteredPosts = allPosts.filter(post => 
-        post.tags && post.tags.some(tag => tag.toLowerCase().includes(hashtag.toLowerCase().replace('#', '')))
-    );
-    
-    displayPosts(filteredPosts);
-}
-
-function showAllPosts() {
-    displayPosts(allPosts);
 }
 
 async function loadPopularHashtags() {
@@ -103,102 +175,73 @@ async function loadPopularHashtags() {
         
         if (data.success) {
             allHashtags = data.hashtags;
-            displayPopularHashtags();
+            displayHashtags();
+        } else {
+            console.error('Error loading hashtags:', data.message);
         }
     } catch (error) {
-        console.error('Error loading popular hashtags:', error);
+        console.error('Error fetching hashtags:', error);
     }
 }
 
-function displayPopularHashtags() {
+function displayHashtags() {
     const hashtagList = document.querySelector('.hashtag-list');
     hashtagList.innerHTML = '';
 
     allHashtags.forEach(hashtag => {
-        const hashtagItem = document.createElement('li');
-        hashtagItem.className = 'hashtag-item';
+        const listItem = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = '#';
+        link.className = 'hashtag-link';
+        link.textContent = `#${hashtag.name}`;
+        link.setAttribute('data-hashtag', hashtag.name);
+        link.setAttribute('data-usage-count', hashtag.usageCount);
         
-        const hashtagLink = document.createElement('a');
-        hashtagLink.href = '#';
-        hashtagLink.className = 'hashtag-link';
-        hashtagLink.textContent = `#${hashtag.name}`;
-        hashtagLink.dataset.hashtag = hashtag.name;
-        
-        hashtagLink.addEventListener('click', function(e) {
+        link.addEventListener('click', function(e) {
             e.preventDefault();
-            toggleHashtagSelection(hashtag.name, hashtagLink);
+            toggleHashtagSelection(hashtag.name, this);
         });
         
-        hashtagItem.appendChild(hashtagLink);
-        hashtagList.appendChild(hashtagItem);
+        listItem.appendChild(link);
+        hashtagList.appendChild(listItem);
     });
-    
-    // Add "View all +" link
-    const viewAllItem = document.createElement('li');
-    viewAllItem.className = 'hashtag-item';
-    
-    const viewAllLink = document.createElement('a');
-    viewAllLink.href = '/hashtags';
-    viewAllLink.className = 'hashtag-link';
-    viewAllLink.style.color = '#999';
-    viewAllLink.style.fontStyle = 'italic';
-    viewAllLink.textContent = 'View all +';
-    
-    viewAllItem.appendChild(viewAllLink);
-    hashtagList.appendChild(viewAllItem);
 }
 
-function toggleHashtagSelection(hashtagName, hashtagLink) {
+function toggleHashtagSelection(hashtagName, element) {
     const index = selectedHashtags.indexOf(hashtagName);
     
     if (index > -1) {
-        // Deselect hashtag
+        // Remove from selection
         selectedHashtags.splice(index, 1);
-        hashtagLink.classList.remove('active');
+        element.classList.remove('active');
     } else {
-        // Select hashtag
+        // Add to selection
         selectedHashtags.push(hashtagName);
-        hashtagLink.classList.add('active');
+        element.classList.add('active');
     }
     
     updateSortButton();
 }
 
 function updateSortButton() {
-    let sortBtn = document.getElementById('sortBtn');
-    let clearBtn = document.getElementById('clearBtn');
+    const sortBtn = document.getElementById('sortBtn');
+    const hashtagSidebar = document.querySelector('.hashtag-sidebar');
     
-    if (!sortBtn) {
-        // Create sort button if it doesn't exist
-        const hashtagSidebar = document.querySelector('.hashtag-sidebar');
-        sortBtn = document.createElement('button');
-        sortBtn.id = 'sortBtn';
-        sortBtn.className = 'sort-btn';
-        sortBtn.style.cssText = `
-            width: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: transform 0.2s ease;
-        `;
-        sortBtn.addEventListener('click', sortBySelectedTags);
-        hashtagSidebar.appendChild(sortBtn);
-        
-        // Create clear selection button
-        clearBtn = document.createElement('button');
-        clearBtn.id = 'clearBtn';
+    // Remove existing clear button
+    const existingClearBtn = hashtagSidebar.querySelector('.clear-btn');
+    if (existingClearBtn) {
+        existingClearBtn.remove();
+    }
+    
+    if (selectedHashtags.length > 0) {
+        // Add clear button
+        const clearBtn = document.createElement('button');
         clearBtn.className = 'clear-btn';
         clearBtn.textContent = 'Clear Selection';
         clearBtn.style.cssText = `
-            width: 100%;
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
+            background: #ff6b6b;
+            color: white;
+            border: 2px solid #ff6b6b;
             padding: 10px;
             border-radius: 8px;
             font-weight: 600;
@@ -223,18 +266,19 @@ function updateSortButton() {
 
 function sortBySelectedTags() {
     if (selectedHashtags.length === 0) {
-        displayPosts(allPosts);
-        return;
+        filteredPosts = [...allPosts];
+    } else {
+        filteredPosts = allPosts.filter(post => 
+            post.tags && post.tags.some(tag => {
+                const tagName = tag.replace('#', '');
+                return selectedHashtags.includes(tagName);
+            })
+        );
     }
     
-    const filteredPosts = allPosts.filter(post => 
-        post.tags && post.tags.some(tag => {
-            const tagName = tag.replace('#', '');
-            return selectedHashtags.includes(tagName);
-        })
-    );
-    
-    displayPosts(filteredPosts);
+    // Reset to first page when filtering
+    currentPage = 1;
+    displayPosts();
 }
 
 function checkSelectedHashtags() {
@@ -263,6 +307,11 @@ function checkSelectedHashtags() {
     }
 }
 
+function setupSortButton() {
+    const sortBtn = document.getElementById('sortBtn');
+    sortBtn.addEventListener('click', sortBySelectedTags);
+}
+
 function clearSelection() {
     // Clear selected hashtags
     selectedHashtags = [];
@@ -272,8 +321,10 @@ function clearSelection() {
         link.classList.remove('active');
     });
     
-    // Show all posts
-    displayPosts(allPosts);
+    // Reset to all posts
+    filteredPosts = [...allPosts];
+    currentPage = 1;
+    displayPosts();
     
     // Update sort button
     updateSortButton();

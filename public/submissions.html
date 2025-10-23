@@ -26,6 +26,7 @@
             <ul class="hashtag-list">
                 <!-- Hashtags will be loaded dynamically -->
             </ul>
+            <button id="sortBtn" class="sort-btn" disabled>Sort</button>
         </div>
 
         <div class="main-content">
@@ -37,6 +38,19 @@
             <ul class="post-list" id="postList">
                 <!-- Posts will be dynamically loaded here -->
             </ul>
+            
+            <!-- Pagination Controls -->
+            <div class="pagination-container" id="paginationContainer">
+                <button class="pagination-btn" id="prevBtn" disabled>
+                    <span>←</span> Previous
+                </button>
+                <div class="pagination-info" id="paginationInfo">
+                    Page 1 of 1
+                </div>
+                <button class="pagination-btn" id="nextBtn" disabled>
+                    Next <span>→</span>
+                </button>
+            </div>
         </div>
     </div>
 
