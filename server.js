@@ -552,9 +552,26 @@ app.get('/api/recruits', async (req, res) => {
       .populate('postId')
       .sort({ publishedAt: -1 });
     
-    console.log(`Found ${recruits.length} recruits in database:`, recruits.map(r => ({ id: r._id, authorId: r.authorId, name: r.name })));
+    // Get user profile pictures for each recruit
+    const recruitsWithProfiles = await Promise.all(recruits.map(async (recruit) => {
+      try {
+        const user = await User.findById(recruit.authorId);
+        return {
+          ...recruit.toObject(),
+          profilePicture: user ? user.profilePicture : '/uploads/default-avatar.svg'
+        };
+      } catch (error) {
+        console.error('Error fetching user profile for recruit:', error);
+        return {
+          ...recruit.toObject(),
+          profilePicture: '/uploads/default-avatar.svg'
+        };
+      }
+    }));
     
-    res.json({ success: true, recruits });
+    console.log(`Found ${recruitsWithProfiles.length} recruits in database:`, recruitsWithProfiles.map(r => ({ id: r._id, authorId: r.authorId, name: r.name })));
+    
+    res.json({ success: true, recruits: recruitsWithProfiles });
   } catch (error) {
     console.error('Error fetching recruits:', error);
     res.status(500).json({ success: false, message: 'Server error' });

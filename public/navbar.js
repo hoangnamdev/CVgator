@@ -35,7 +35,7 @@ function showLoginButton(navContainer) {
     navContainer.appendChild(loginButton);
 }
 
-function showUserProfile(navContainer, userData) {
+async function showUserProfile(navContainer, userData) {
     // Remove existing user profile or login button
     const existingLogin = navContainer.querySelector('.nav-login');
     const existingUser = navContainer.querySelector('.nav-user');
@@ -43,11 +43,37 @@ function showUserProfile(navContainer, userData) {
     if (existingLogin) existingLogin.remove();
     if (existingUser) existingUser.remove();
     
+    // Fetch user profile picture
+    let profilePicture = '/uploads/default-avatar.svg';
+    try {
+        const response = await fetch('/api/user-profile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId: userData.id })
+        });
+        
+        const data = await response.json();
+        if (data.success && data.user.profilePicture) {
+            profilePicture = data.user.profilePicture;
+        }
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+    }
+    
     // Create user profile section
     const userSection = document.createElement('div');
     userSection.className = 'nav-user';
+    
+    // Use profile picture if available, otherwise fall back to initials
+    const avatarHtml = profilePicture && profilePicture !== '/uploads/default-avatar.svg' 
+        ? `<img src="${profilePicture}" alt="${userData.username}" class="user-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+           <div class="user-avatar" style="display: none;">${userData.username.charAt(0).toUpperCase()}</div>`
+        : `<div class="user-avatar">${userData.username.charAt(0).toUpperCase()}</div>`;
+    
     userSection.innerHTML = `
-        <div class="user-avatar">${userData.username.charAt(0).toUpperCase()}</div>
+        ${avatarHtml}
         <span class="user-name">${userData.username}</span>
         <div class="user-dropdown">
             <a href="/profile" class="dropdown-item">Profile</a>

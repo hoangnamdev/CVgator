@@ -269,10 +269,16 @@ function createCandidateCard(recruit) {
     const name = recruit.name;
     const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
     
+    // Use profile picture if available, otherwise fall back to initials
+    const avatarHtml = recruit.profilePicture && recruit.profilePicture !== '/uploads/default-avatar.svg' 
+        ? `<img src="${recruit.profilePicture}" alt="${name}" class="avatar-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+           <div class="avatar-circle" style="display: none;">${initials}</div>`
+        : `<div class="avatar-circle">${initials}</div>`;
+    
     card.innerHTML = `
         <div class="candidate-header">
             <div class="candidate-avatar">
-                <div class="avatar-circle">${initials}</div>
+                ${avatarHtml}
             </div>
             <h3 class="candidate-name">${name}</h3>
         </div>
