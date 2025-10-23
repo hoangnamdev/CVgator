@@ -138,7 +138,7 @@ function displayError(message) {
 
 function createPostElement(post) {
     const postItem = document.createElement('li');
-    postItem.className = 'post-item';
+    postItem.className = 'post-item clickable-post';
     
     const tagsHtml = post.tags ? post.tags.map(tag => 
         `<span class="post-tag">${tag}</span>`
@@ -155,10 +155,12 @@ function createPostElement(post) {
         <div class="post-tags">
             ${tagsHtml}
         </div>
-        <div class="post-actions">
-            <button class="view-btn" onclick="viewPost('${post._id}')">View Details</button>
-        </div>
     `;
+    
+    // Make the entire post clickable
+    postItem.addEventListener('click', function() {
+        viewPost(post._id);
+    });
     
     return postItem;
 }
