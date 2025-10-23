@@ -78,6 +78,9 @@ function sortBySelectedTags() {
     // Store selected hashtags in sessionStorage
     sessionStorage.setItem('selectedHashtags', JSON.stringify(selectedHashtags));
     
+    // Set flag to auto-sort when arriving at submissions page
+    sessionStorage.setItem('autoSort', 'true');
+    
     // Redirect to submissions page
     window.location.href = '/submissions';
 }

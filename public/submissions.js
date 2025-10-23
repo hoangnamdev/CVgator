@@ -217,11 +217,13 @@ function sortBySelectedTags() {
 
 function checkSelectedHashtags() {
     const storedHashtags = sessionStorage.getItem('selectedHashtags');
+    const autoSort = sessionStorage.getItem('autoSort');
+    
     if (storedHashtags) {
         selectedHashtags = JSON.parse(storedHashtags);
         sessionStorage.removeItem('selectedHashtags'); // Clear after use
         
-        // Highlight selected hashtags and sort
+        // Highlight selected hashtags
         selectedHashtags.forEach(hashtagName => {
             const hashtagLink = document.querySelector(`[data-hashtag="${hashtagName}"]`);
             if (hashtagLink) {
@@ -230,6 +232,11 @@ function checkSelectedHashtags() {
         });
         
         updateSortButton();
-        sortBySelectedTags();
+        
+        // Auto-sort if coming from hashtags page
+        if (autoSort === 'true') {
+            sessionStorage.removeItem('autoSort'); // Clear after use
+            sortBySelectedTags();
+        }
     }
 }

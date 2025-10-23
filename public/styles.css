@@ -759,31 +759,62 @@ textarea:focus {
 }
 
 /* Hashtags Page Styles */
-.hashtags-container {
+.hashtags-section {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
 }
 
-.hashtags-header {
+.hashtags-controls {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: center;
+    gap: 15px;
     margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #f0f0f0;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
+    border-radius: 12px;
+    border: 1px solid #e1e8ff;
 }
 
-.hashtags-header h1 {
-    color: #333;
-    font-size: 2.5em;
-    font-weight: bold;
-    margin: 0;
+.hashtags-controls .btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    min-width: 120px;
 }
 
-.hashtags-header p {
-    color: #666;
-    margin: 0;
+.hashtags-controls .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.hashtags-controls .btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.hashtags-controls .btn-primary:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.hashtags-controls .btn-secondary {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+.hashtags-controls .btn-secondary:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
 }
 
 .sort-btn {
@@ -809,41 +840,78 @@ textarea:focus {
 
 .hashtags-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
 }
 
 .hashtag-card {
     background: white;
-    border: 2px solid #e1e1e1;
-    border-radius: 8px;
-    padding: 15px;
+    border: 2px solid #e8f0ff;
+    border-radius: 12px;
+    padding: 20px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.hashtag-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
 }
 
 .hashtag-card:hover {
     border-color: #667eea;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+}
+
+.hashtag-card:hover::before {
+    transform: scaleX(1);
 }
 
 .hashtag-card.selected {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.hashtag-card.selected::before {
+    transform: scaleX(1);
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .hashtag-card .tag-name {
-    font-weight: bold;
-    font-size: 1.1em;
-    margin-bottom: 5px;
+    font-weight: 700;
+    font-size: 1.2em;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.hashtag-card.selected .tag-name {
+    color: white;
 }
 
 .hashtag-card .tag-count {
-    font-size: 0.9em;
-    opacity: 0.8;
+    font-size: 0.95em;
+    opacity: 0.7;
+    color: #666;
+    font-weight: 500;
+}
+
+.hashtag-card.selected .tag-count {
+    color: rgba(255, 255, 255, 0.9);
 }
 
 /* Responsive design */
