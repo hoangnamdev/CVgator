@@ -188,6 +188,10 @@ const hashtagSchema = new mongoose.Schema({
   usageCount: {
     type: Number,
     default: 0
+  },
+  isHardcoded: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
@@ -921,6 +925,24 @@ app.post('/api/delete-post', async (req, res) => {
     // Delete all comments associated with this post
     await Comment.deleteMany({ postId: postId });
     
+    // Handle hashtag cleanup - only remove user-created hashtags
+    if (post.tags && Array.isArray(post.tags)) {
+      const tagNames = post.tags.map(tag => tag.replace('#', '').toLowerCase());
+      
+      // Decrease usage count for all hashtags used in this post
+      await Hashtag.updateMany(
+        { name: { $in: tagNames } },
+        { $inc: { usageCount: -1 } }
+      );
+      
+      // Remove user-created hashtags that now have 0 usage
+      await Hashtag.deleteMany({
+        name: { $in: tagNames },
+        isHardcoded: false,
+        usageCount: { $lte: 0 }
+      });
+    }
+    
     // Delete the post
     await Post.findByIdAndDelete(postId);
     
@@ -989,6 +1011,30 @@ app.post('/api/delete-account', async (req, res) => {
     
     // Delete user's published CV
     await Recruit.deleteMany({ authorId: userId });
+    
+    // Handle hashtag cleanup for all user's posts - only remove user-created hashtags
+    const allUserTagNames = [];
+    for (const post of userPosts) {
+      if (post.tags && Array.isArray(post.tags)) {
+        const tagNames = post.tags.map(tag => tag.replace('#', '').toLowerCase());
+        allUserTagNames.push(...tagNames);
+      }
+    }
+    
+    if (allUserTagNames.length > 0) {
+      // Decrease usage count for all hashtags used in user's posts
+      await Hashtag.updateMany(
+        { name: { $in: allUserTagNames } },
+        { $inc: { usageCount: -1 } }
+      );
+      
+      // Remove user-created hashtags that now have 0 usage
+      await Hashtag.deleteMany({
+        name: { $in: allUserTagNames },
+        isHardcoded: false,
+        usageCount: { $lte: 0 }
+      });
+    }
     
     // Delete comments on user's posts
     const userPostIds = userPosts.map(post => post._id);
@@ -1061,31 +1107,31 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
       .filter(tag => tag.trim())
       .map(tag => tag.trim().toLowerCase().replace('#', ''));
     
-    // Validate that all hashtags exist in the database
+    // Check which hashtags already exist
     const existingHashtags = await Hashtag.find({ name: { $in: tagNames } });
     const existingTagNames = existingHashtags.map(tag => tag.name);
     
-    const invalidTags = tagNames.filter(tag => !existingTagNames.includes(tag));
-    if (invalidTags.length > 0) {
-      // Delete uploaded file from Cloudinary if validation fails
-      try {
-        await cloudinary.uploader.destroy(cloudinaryResult.public_id);
-      } catch (deleteError) {
-        console.error('Failed to delete file from Cloudinary:', deleteError);
-      }
-      return res.status(400).json({ 
-        success: false, 
-        message: 'You\'re using an invalid hashtag!' 
-      });
+    // Create new hashtags for ones that don't exist
+    const newTagNames = tagNames.filter(tag => !existingTagNames.includes(tag));
+    if (newTagNames.length > 0) {
+      const newHashtags = newTagNames.map(name => ({
+        name,
+        usageCount: 1,
+        isHardcoded: false
+      }));
+      await Hashtag.insertMany(newHashtags);
+      console.log(`Created ${newTagNames.length} new hashtags:`, newTagNames);
     }
     
     const formattedTags = tagNames.map(tag => '#' + tag);
     
-    // Update hashtag usage counts
-    await Hashtag.updateMany(
-      { name: { $in: tagNames } },
-      { $inc: { usageCount: 1 } }
-    );
+    // Update hashtag usage counts for existing hashtags
+    if (existingTagNames.length > 0) {
+      await Hashtag.updateMany(
+        { name: { $in: existingTagNames } },
+        { $inc: { usageCount: 1 } }
+      );
+    }
 
     // Get current date in DDMMYY format
     const now = new Date();
@@ -1186,6 +1232,12 @@ async function updateHashtagUsageCounts() {
       { usageCount: 0 }
     );
     
+    // Remove user-created hashtags that have 0 usage
+    await Hashtag.deleteMany({
+      isHardcoded: false,
+      usageCount: 0
+    });
+    
     console.log('Hashtag usage counts updated successfully!');
   } catch (error) {
     console.error('Error updating hashtag usage counts:', error);
@@ -1252,7 +1304,7 @@ async function initializeSampleData() {
         'enterprise', 'consulting', 'agency', 'non-profit'
       ];
       
-      const hashtagDocs = techHashtags.map(name => ({ name, usageCount: 0 }));
+      const hashtagDocs = techHashtags.map(name => ({ name, usageCount: 0, isHardcoded: true }));
       await Hashtag.insertMany(hashtagDocs);
       console.log('Sample hashtags created successfully!');
     }
