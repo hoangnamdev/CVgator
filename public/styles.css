@@ -1004,7 +1004,7 @@ textarea:focus {
 .recruit-container {
     max-width: 1200px;
     margin: 60px auto 0 auto;
-    padding: 30px 80px 80px 80px;
+    padding: 30px 80px 240px 80px;
 }
 
 .recruit-header {
@@ -1534,7 +1534,7 @@ textarea:focus {
 /* Desktop and large screen optimizations */
 @media (min-width: 1200px) {
     .recruit-container {
-        padding: 30px 100px 80px 100px;
+        padding: 30px 100px 240px 100px;
     }
     
     .publish-cv-container {
@@ -1545,7 +1545,7 @@ textarea:focus {
 /* Responsive design for recruit page */
 @media (max-width: 768px) {
     .recruit-container {
-        padding: 20px 20px 60px 20px;
+        padding: 20px 20px 180px 20px;
     }
     
     .publish-cv-container {
@@ -1576,7 +1576,7 @@ textarea:focus {
 
 @media (max-width: 480px) {
     .recruit-container {
-        padding: 15px 15px 50px 15px;
+        padding: 15px 15px 150px 15px;
     }
     
     .publish-cv-container {
