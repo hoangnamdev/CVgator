@@ -44,6 +44,37 @@ const upload = multer({
   }
 });
 
+// Configure multer for profile picture uploads
+const profileStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'profile-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const profileFileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png|gif|webp/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
+  
+  if (mimetype && extname) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed for profile pictures'));
+  }
+};
+
+const profileUpload = multer({ 
+  storage: profileStorage,
+  fileFilter: profileFileFilter,
+  limits: {
+    fileSize: 3 * 1024 * 1024 // 3MB limit for profile pictures
+  }
+});
+
 // Create uploads directory if it doesn't exist
 const fs = require('fs');
 const uploadsDir = 'uploads';
@@ -80,6 +111,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 6
+  },
+  profilePicture: {
+    type: String,
+    default: '/uploads/default-avatar.png'
   }
 });
 
@@ -227,6 +262,10 @@ app.get('/', (req, res) => {
 
 app.get('/register', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'register.html'));
+});
+
+app.get('/profile', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'profile.html'));
 });
 
 app.get('/submissions', (req, res) => {
@@ -653,6 +692,279 @@ app.get('/api/debug-recruits', async (req, res) => {
   } catch (error) {
     console.error('Debug error:', error);
     res.status(500).json({ success: false, message: 'Debug error' });
+  }
+});
+
+// Profile API endpoints
+app.post('/api/user-profile', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'User ID is required' 
+      });
+    }
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+    
+    res.json({ 
+      success: true, 
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        profilePicture: user.profilePicture
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.post('/api/update-profile', profileUpload.single('profilePicture'), async (req, res) => {
+  try {
+    const { userId, username } = req.body;
+    const profilePictureFile = req.file;
+    
+    if (!userId || !username) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'User ID and username are required' 
+      });
+    }
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+    
+    // Check if username is already taken by another user
+    const existingUser = await User.findOne({ 
+      username: username.trim(), 
+      _id: { $ne: userId } 
+    });
+    
+    if (existingUser) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Username is already taken' 
+      });
+    }
+    
+    // Update username
+    user.username = username.trim();
+    
+    // Update profile picture if provided
+    if (profilePictureFile) {
+      // Delete old profile picture if it exists
+      if (user.profilePicture && user.profilePicture !== '/uploads/default-avatar.png') {
+        const oldPicturePath = user.profilePicture.replace('/uploads/', 'uploads/');
+        if (fs.existsSync(oldPicturePath)) {
+          fs.unlinkSync(oldPicturePath);
+        }
+      }
+      user.profilePicture = `/uploads/${profilePictureFile.filename}`;
+    }
+    
+    await user.save();
+    
+    res.json({ 
+      success: true, 
+      message: 'Profile updated successfully',
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        profilePicture: user.profilePicture
+      }
+    });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.post('/api/user-recruit', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'User ID is required' 
+      });
+    }
+    
+    const recruit = await Recruit.findOne({ authorId: userId }).populate('postId');
+    
+    res.json({ 
+      success: true, 
+      recruit: recruit ? {
+        _id: recruit._id,
+        name: recruit.name,
+        contactInformation: recruit.contactInformation,
+        publishedAt: recruit.publishedAt,
+        postId: recruit.postId?._id
+      } : null
+    });
+  } catch (error) {
+    console.error('Error fetching user recruit:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.post('/api/delete-recruit', async (req, res) => {
+  try {
+    const { recruitId } = req.body;
+    
+    if (!recruitId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Recruit ID is required' 
+      });
+    }
+    
+    const recruit = await Recruit.findById(recruitId);
+    if (!recruit) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Published CV not found' 
+      });
+    }
+    
+    await Recruit.findByIdAndDelete(recruitId);
+    
+    res.json({ 
+      success: true, 
+      message: 'Published CV deleted successfully' 
+    });
+  } catch (error) {
+    console.error('Error deleting recruit:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.post('/api/delete-post', async (req, res) => {
+  try {
+    const { postId } = req.body;
+    
+    if (!postId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Post ID is required' 
+      });
+    }
+    
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Post not found' 
+      });
+    }
+    
+    // Delete the CV file
+    if (post.link) {
+      const filePath = post.link.replace('/uploads/', 'uploads/');
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+    
+    // Delete associated recruit if exists
+    await Recruit.findOneAndDelete({ postId: postId });
+    
+    // Delete the post
+    await Post.findByIdAndDelete(postId);
+    
+    res.json({ 
+      success: true, 
+      message: 'CV post deleted successfully' 
+    });
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.post('/api/delete-account', async (req, res) => {
+  try {
+    const { userId, password } = req.body;
+    
+    if (!userId || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'User ID and password are required' 
+      });
+    }
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+    
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Incorrect password' 
+      });
+    }
+    
+    // Delete user's posts and associated files
+    const userPosts = await Post.find({ authorId: userId });
+    for (const post of userPosts) {
+      if (post.link) {
+        const filePath = post.link.replace('/uploads/', 'uploads/');
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+    }
+    
+    // Delete user's profile picture if it exists
+    if (user.profilePicture && user.profilePicture !== '/uploads/default-avatar.png') {
+      const profilePicturePath = user.profilePicture.replace('/uploads/', 'uploads/');
+      if (fs.existsSync(profilePicturePath)) {
+        fs.unlinkSync(profilePicturePath);
+      }
+    }
+    
+    // Delete user's published CV
+    await Recruit.deleteMany({ authorId: userId });
+    
+    // Delete user's posts
+    await Post.deleteMany({ authorId: userId });
+    
+    // Delete user's comments
+    await Comment.deleteMany({ authorId: userId });
+    
+    // Finally, delete the user account
+    await User.findByIdAndDelete(userId);
+    
+    res.json({ 
+      success: true, 
+      message: 'Account deleted successfully' 
+    });
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 

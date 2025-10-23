@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - CVgator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/">CVgator</a>
+            </div>
+            <div class="nav-menu">
+                <a href="/submissions" class="nav-link">Submissions</a>
+                <a href="/recruit" class="nav-link">Recruit</a>
+            </div>
+            <!-- Login button or user profile will be added here by JavaScript -->
+        </div>
+    </nav>
+
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1>Profile</h1>
+        </div>
+
+        <!-- Profile Information Card -->
+        <div class="profile-card">
+            <h2>Profile Information</h2>
+            <div class="profile-info">
+                <div class="profile-details">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" placeholder="Enter your username">
+                    </div>
+                </div>
+                <div class="profile-picture-section">
+                    <div class="profile-picture-container">
+                        <img id="profilePicture" src="/uploads/default-avatar.png" alt="Profile Picture" class="profile-picture">
+                        <input type="file" id="profilePictureInput" accept="image/*" style="display: none;">
+                        <button type="button" id="changePictureBtn" class="change-picture-btn">
+                            <i class="fas fa-camera"></i> Change Picture
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" id="saveProfileBtn" class="save-btn disabled">Save</button>
+        </div>
+
+        <!-- Published CV Card -->
+        <div class="profile-card">
+            <h2>Published CV</h2>
+            <div id="publishedCvContent">
+                <div class="no-content">
+                    <p>You haven't published any CV yet.</p>
+                    <a href="/publish-cv" class="publish-link">Publish your CV</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Posts Card -->
+        <div class="profile-card">
+            <h2>Posts</h2>
+            <div id="postsContent">
+                <div class="no-content">
+                    <p>You haven't uploaded any CVs yet.</p>
+                    <a href="/upload" class="upload-link">Upload your first CV</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Account Button -->
+        <button type="button" id="deleteAccountBtn" class="delete-account-btn">
+            <i class="fas fa-trash"></i> Delete Account
+        </button>
+    </div>
+
+    <script src="navbar.js"></script>
+    <script src="profile.js"></script>
+</body>
+</html>
