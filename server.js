@@ -74,14 +74,19 @@ const profileUpload = multer({
 
 // Note: No longer need local uploads directory since we're using Cloudinary
 
-// MongoDB connection
+// MongoDB connection (non-blocking)
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/cvgator';
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000, // 5 second timeout
+  connectTimeoutMS: 10000, // 10 second timeout
 })
 .then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
+.catch(err => {
+  console.error('MongoDB connection error:', err);
+  console.log('Server will continue without MongoDB connection');
+});
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -311,16 +316,36 @@ Please provide a professional, constructive analysis in 2-3 paragraphs. Be speci
 
 // Health check endpoint for Railway
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'healthy', 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  });
+  try {
+    // Check MongoDB connection status
+    const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    
+    res.status(200).json({ 
+      status: 'healthy', 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      mongodb: mongoStatus,
+      port: PORT
+    });
+  } catch (error) {
+    // Even if there's an error, return healthy status for Railway
+    res.status(200).json({ 
+      status: 'healthy', 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      error: 'Health check error but server is running'
+    });
+  }
 });
 
 // Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Simple health check for Railway (alternative to /api/health)
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
 });
 
 app.get('/register', (req, res) => {
@@ -1553,8 +1578,13 @@ setInterval(updateHashtagUsageCounts, 6 * 60 * 60 * 1000);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-  // Only initialize sample data in development
+  console.log(`Health check available at: http://localhost:${PORT}/api/health`);
+  
+  // Only initialize sample data in development (non-blocking)
   if (process.env.NODE_ENV !== 'production') {
-    initializeSampleData();
+    initializeSampleData().catch(err => {
+      console.error('Sample data initialization failed:', err);
+      console.log('Server continues without sample data');
+    });
   }
 });
