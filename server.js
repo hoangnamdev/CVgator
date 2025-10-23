@@ -581,8 +581,15 @@ app.post('/api/publish-cv', async (req, res) => {
       });
     }
     
+    console.log(`Publishing CV for user: ${userId}, post.authorId: ${post.authorId}`);
+    
+    // Check existing recruits for this user before deletion
+    const existingRecruits = await Recruit.find({ authorId: post.authorId });
+    console.log(`Found ${existingRecruits.length} existing recruits for user ${post.authorId}:`, existingRecruits.map(r => r._id));
+    
     // Remove any existing published CVs for this user (only one publish per user allowed)
-    await Recruit.deleteMany({ authorId: post.authorId });
+    const deleteResult = await Recruit.deleteMany({ authorId: post.authorId });
+    console.log(`Deleted ${deleteResult.deletedCount} previous publishes for user ${post.authorId}`);
     
     // Create new recruit entry
     const recruit = new Recruit({
