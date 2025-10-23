@@ -1348,23 +1348,45 @@ app.get('/download-cv/:postId', async (req, res) => {
       });
     }
     
-    // Fetch the PDF from Cloudinary
-    const response = await fetch(post.link);
-    if (!response.ok) {
-      return res.status(404).json({ 
+    // Use Node.js https module to fetch the PDF from Cloudinary
+    const https = require('https');
+    const url = require('url');
+    
+    const cloudinaryUrl = new url.URL(post.link);
+    
+    const options = {
+      hostname: cloudinaryUrl.hostname,
+      port: 443,
+      path: cloudinaryUrl.pathname + cloudinaryUrl.search,
+      method: 'GET'
+    };
+    
+    const request = https.request(options, (response) => {
+      if (response.statusCode !== 200) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'CV file not found' 
+        });
+      }
+      
+      // Set proper headers for PDF download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="CV.pdf"`);
+      res.setHeader('Content-Length', response.headers['content-length']);
+      
+      // Pipe the response from Cloudinary to our response
+      response.pipe(res);
+    });
+    
+    request.on('error', (error) => {
+      console.error('Error fetching PDF from Cloudinary:', error);
+      res.status(500).json({ 
         success: false, 
-        message: 'CV file not found' 
+        message: 'Error downloading CV' 
       });
-    }
+    });
     
-    const pdfBuffer = await response.buffer();
-    
-    // Set proper headers for PDF download
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="CV.pdf"`);
-    res.setHeader('Content-Length', pdfBuffer.length);
-    
-    res.send(pdfBuffer);
+    request.end();
   } catch (error) {
     console.error('Error serving PDF:', error);
     res.status(500).json({ 
