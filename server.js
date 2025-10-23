@@ -531,10 +531,19 @@ app.get('/api/recruits', async (req, res) => {
   }
 });
 
-app.get('/api/user-posts', async (req, res) => {
+app.post('/api/user-posts', async (req, res) => {
   try {
-    // For now, return all posts. In a real app, this would filter by user
-    const posts = await Post.find({}, 'title createdAt')
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'User ID is required' 
+      });
+    }
+    
+    // Filter posts by the specific user
+    const posts = await Post.find({ authorId: userId }, 'title createdAt')
       .sort({ createdAt: -1 });
     
     res.json({ success: true, posts });
@@ -546,21 +555,29 @@ app.get('/api/user-posts', async (req, res) => {
 
 app.post('/api/publish-cv', async (req, res) => {
   try {
-    const { fullName, cvSelect, contactInfo } = req.body;
+    const { fullName, cvSelect, contactInfo, userId } = req.body;
     
-    if (!fullName || !cvSelect || !contactInfo) {
+    if (!fullName || !cvSelect || !contactInfo || !userId) {
       return res.status(400).json({ 
         success: false, 
         message: 'All fields are required' 
       });
     }
     
-    // Check if post exists
+    // Check if post exists and belongs to the user
     const post = await Post.findById(cvSelect);
     if (!post) {
       return res.status(400).json({ 
         success: false, 
         message: 'Selected CV not found' 
+      });
+    }
+    
+    // Verify that the post belongs to the current user
+    if (post.authorId.toString() !== userId) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'You can only publish your own CVs' 
       });
     }
     

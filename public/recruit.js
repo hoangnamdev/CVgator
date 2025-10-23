@@ -11,7 +11,23 @@ document.addEventListener('DOMContentLoaded', function() {
     loadRecruits();
     loadHashtags();
     setupFilterPanel();
+    setupPublishCVButton();
 });
+
+function setupPublishCVButton() {
+    const publishCVBtn = document.querySelector('.publish-cv-btn');
+    if (publishCVBtn) {
+        publishCVBtn.addEventListener('click', function(e) {
+            const user = sessionStorage.getItem('user');
+            if (!user) {
+                e.preventDefault();
+                alert('You need to login in order to publish your CV!');
+                window.location.href = '/';
+                return;
+            }
+        });
+    }
+}
 
 async function loadRecruits() {
     try {

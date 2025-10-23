@@ -2,13 +2,36 @@
 let userPosts = [];
 
 document.addEventListener('DOMContentLoaded', function() {
+    checkAuthentication();
     loadUserPosts();
     setupFormSubmission();
 });
 
+function checkAuthentication() {
+    const user = sessionStorage.getItem('user');
+    if (!user) {
+        alert('You need to login in order to publish your CV!');
+        window.location.href = '/';
+        return;
+    }
+}
+
 async function loadUserPosts() {
     try {
-        const response = await fetch('/api/user-posts');
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        if (!user) {
+            console.error('No user found in session');
+            return;
+        }
+
+        const response = await fetch('/api/user-posts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId: user.id })
+        });
+        
         const data = await response.json();
         
         if (data.success) {
@@ -47,11 +70,19 @@ function setupFormSubmission() {
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        if (!user) {
+            alert('You need to login in order to publish your CV!');
+            window.location.href = '/';
+            return;
+        }
+        
         const formData = new FormData(form);
         const data = {
             fullName: formData.get('fullName'),
             cvSelect: formData.get('cvSelect'),
-            contactInfo: formData.get('contactInfo')
+            contactInfo: formData.get('contactInfo'),
+            userId: user.id
         };
         
         try {
