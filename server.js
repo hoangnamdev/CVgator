@@ -7,19 +7,27 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
-// Optional AI dependencies
+// Optional AI dependencies - completely optional
 let GoogleGenerativeAI, pdfjsLib;
 try {
+  console.log('Attempting to load AI dependencies...');
   const genAI = require('@google/generative-ai');
   GoogleGenerativeAI = genAI.GoogleGenerativeAI;
-  pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
-  console.log('AI dependencies loaded successfully');
-  console.log('GoogleGenerativeAI available:', !!GoogleGenerativeAI);
-  console.log('pdfjsLib available:', !!pdfjsLib);
+  console.log('GoogleGenerativeAI loaded successfully');
 } catch (error) {
-  console.error('Failed to load AI dependencies:', error);
-  console.log('AI features will be disabled');
+  console.log('GoogleGenerativeAI not available:', error.message);
+  GoogleGenerativeAI = null;
 }
+
+try {
+  pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
+  console.log('pdfjsLib loaded successfully');
+} catch (error) {
+  console.log('pdfjsLib not available:', error.message);
+  pdfjsLib = null;
+}
+
+console.log('AI setup complete - GoogleGenerativeAI:', !!GoogleGenerativeAI, 'pdfjsLib:', !!pdfjsLib);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -303,17 +311,30 @@ async function generateAIFeedback(pdfBuffer, title, context) {
       return 'AI feedback is not available.';
     }
 
-    // Extract text from PDF using pdfjs-dist
+    // Extract text from PDF using pdfjs-dist with timeout
+    console.log('Starting PDF text extraction...');
     const loadingTask = pdfjsLib.getDocument({ data: pdfBuffer });
-    const pdf = await loadingTask.promise;
+    const pdf = await Promise.race([
+      loadingTask.promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('PDF loading timeout')), 10000))
+    ]);
+    
     let cvText = '';
+    console.log(`PDF loaded, processing ${pdf.numPages} pages...`);
     
     for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items.map(item => item.str).join(' ');
-      cvText += pageText + '\n';
+      try {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => item.str).join(' ');
+        cvText += pageText + '\n';
+      } catch (pageError) {
+        console.error(`Error processing page ${i}:`, pageError);
+        // Continue with other pages
+      }
     }
+    
+    console.log(`PDF text extraction complete, ${cvText.length} characters extracted`);
     
     // Truncate text if too long (Gemini has token limits)
     const maxLength = 8000; // Leave room for prompt
@@ -350,7 +371,8 @@ Please provide a professional, constructive analysis in 2-3 paragraphs. Be speci
     return aiFeedback;
   } catch (error) {
     console.error('Error generating AI feedback:', error);
-    return 'AI feedback is currently unavailable. Please try again later.';
+    // Return a simple fallback message instead of trying to do anything complex
+    return 'AI feedback is currently unavailable. The CV has been uploaded successfully.';
   }
 }
 
@@ -1263,10 +1285,10 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
     
     // Update hashtag usage counts for existing hashtags
     if (existingTagNames.length > 0) {
-      await Hashtag.updateMany(
+    await Hashtag.updateMany(
         { name: { $in: existingTagNames } },
-        { $inc: { usageCount: 1 } }
-      );
+      { $inc: { usageCount: 1 } }
+    );
     }
 
     // Get current date in DDMMYY format
@@ -1292,15 +1314,18 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
       });
     }
 
-    // Generate AI feedback (non-blocking)
+    // Generate AI feedback (non-blocking with timeout)
     let aiFeedback = '';
     try {
       console.log('Generating AI feedback for CV...');
-      aiFeedback = await generateAIFeedback(cvFile.buffer, title.trim(), context.trim());
+      aiFeedback = await Promise.race([
+        generateAIFeedback(cvFile.buffer, title.trim(), context.trim()),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('AI feedback timeout')), 45000)) // 45 second timeout
+      ]);
       console.log('AI feedback generated successfully');
     } catch (aiError) {
       console.error('AI feedback generation failed:', aiError);
-      aiFeedback = 'AI feedback is currently unavailable.';
+      aiFeedback = 'AI feedback is currently unavailable. The CV has been uploaded successfully.';
     }
 
     // Create new post
