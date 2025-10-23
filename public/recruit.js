@@ -298,7 +298,9 @@ function createCandidateCard(recruit) {
 function openCV(cvLink) {
     // Create a temporary link element to download the file with proper extension
     const link = document.createElement('a');
-    link.href = cvLink;
+    // Append .pdf to Cloudinary URL to ensure proper download
+    const downloadUrl = cvLink.endsWith('.pdf') ? cvLink : cvLink + '.pdf';
+    link.href = downloadUrl;
     link.download = 'CV.pdf'; // Force download with .pdf extension
     link.target = '_blank';
     document.body.appendChild(link);
