@@ -109,6 +109,104 @@
     margin-right: 10px;
 }
 
+/* Mobile Responsive Navbar */
+@media (max-width: 768px) {
+    .nav-container {
+        padding: 0 15px;
+    }
+    
+    .nav-logo a {
+        font-size: 1.5em;
+    }
+    
+    .nav-menu {
+        gap: 15px;
+    }
+    
+    .nav-link {
+        padding: 6px 12px;
+        font-size: 0.9em;
+    }
+    
+    .nav-login {
+        padding: 6px 12px;
+        font-size: 0.9em;
+    }
+    
+    /* Hide username on mobile, keep only avatar */
+    .nav-user .user-name {
+        display: none;
+    }
+    
+    .user-avatar,
+    .user-avatar-img {
+        margin-right: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-container {
+        padding: 0 10px;
+    }
+    
+    .nav-logo a {
+        font-size: 1.3em;
+    }
+    
+    .nav-menu {
+        gap: 8px;
+    }
+    
+    .nav-link {
+        padding: 4px 6px;
+        font-size: 0.75em;
+    }
+    
+    .nav-login {
+        padding: 4px 6px;
+        font-size: 0.75em;
+    }
+    
+    .user-avatar,
+    .user-avatar-img {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8em;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 360px) {
+    .nav-container {
+        padding: 0 8px;
+    }
+    
+    .nav-logo a {
+        font-size: 1.2em;
+    }
+    
+    .nav-menu {
+        gap: 6px;
+    }
+    
+    .nav-link {
+        padding: 3px 5px;
+        font-size: 0.7em;
+    }
+    
+    .nav-login {
+        padding: 3px 5px;
+        font-size: 0.7em;
+    }
+    
+    .user-avatar,
+    .user-avatar-img {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75em;
+    }
+}
+
 .user-name {
     color: #333;
     font-weight: 500;
