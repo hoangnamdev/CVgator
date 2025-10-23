@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
@@ -5,9 +6,17 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Cloudinary configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 // Middleware
 app.use(cors());
@@ -83,7 +92,8 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // MongoDB connection
-mongoose.connect('mongodb://localhost:27017/cvgator', {
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/cvgator';
+mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
