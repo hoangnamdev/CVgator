@@ -407,8 +407,8 @@ async function generateAIFeedbackAsync(postId, pdfBuffer, title, context) {
   try {
     console.log(`Starting background AI feedback generation for post ${postId}...`);
     
-    // Generate the AI feedback
-    const aiFeedback = await generateAIFeedback(pdfBuffer, title, context);
+    // Generate the AI feedback with retry logic for API overload
+    const aiFeedback = await generateAIFeedbackWithRetry(pdfBuffer, title, context);
     
     // Update the post with the generated feedback
     await updatePostAIFeedback(postId, aiFeedback);
@@ -416,8 +416,40 @@ async function generateAIFeedbackAsync(postId, pdfBuffer, title, context) {
     console.log(`AI feedback generated and saved for post ${postId}`);
   } catch (error) {
     console.error(`Error in background AI feedback generation for post ${postId}:`, error);
-    // Update with error message
-    await updatePostAIFeedback(postId, 'AI feedback is currently unavailable.');
+    
+    // Check if it's a service overload error
+    let errorMessage = 'AI feedback is currently unavailable.';
+    if (error.message && error.message.includes('503')) {
+      errorMessage = 'AI service is temporarily overloaded. Please try again later.';
+    } else if (error.message && error.message.includes('overloaded')) {
+      errorMessage = 'AI service is temporarily overloaded. Please try again later.';
+    }
+    
+    // Update with appropriate error message
+    await updatePostAIFeedback(postId, errorMessage);
+  }
+}
+
+// Generate AI feedback with retry logic for service overload
+async function generateAIFeedbackWithRetry(pdfBuffer, title, context, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`AI feedback attempt ${attempt}/${maxRetries}`);
+      return await generateAIFeedback(pdfBuffer, title, context);
+    } catch (error) {
+      console.error(`AI feedback attempt ${attempt} failed:`, error.message);
+      
+      // If it's a service overload error and we have retries left, wait and try again
+      if ((error.message.includes('503') || error.message.includes('overloaded')) && attempt < maxRetries) {
+        const waitTime = attempt * 10000; // 10s, 20s, 30s
+        console.log(`Waiting ${waitTime/1000}s before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
+      }
+      
+      // If it's the last attempt or not a retryable error, throw
+      throw error;
+    }
   }
 }
 
@@ -1394,8 +1426,11 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
         updatePostAIFeedback(post._id, 'AI feedback is currently unavailable.');
       });
 
-    // Update hashtag usage counts after new post is created
-    await updateHashtagUsageCounts();
+    // Update hashtag usage counts in background (don't await)
+    updateHashtagUsageCounts()
+      .catch(error => {
+        console.error('Background hashtag usage count update failed:', error);
+      });
 
     res.json({ 
       success: true, 
