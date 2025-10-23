@@ -36,10 +36,10 @@ async function loadUserProfile() {
         if (data.success) {
             const userData = data.user;
             originalUsername = userData.username;
-            originalProfilePicture = userData.profilePicture || '/uploads/default-avatar.png';
+            originalProfilePicture = userData.profilePicture || '/uploads/default-avatar.svg';
             
             document.getElementById('username').value = userData.username;
-            document.getElementById('profilePicture').src = userData.profilePicture || '/uploads/default-avatar.png';
+            document.getElementById('profilePicture').src = userData.profilePicture || '/uploads/default-avatar.svg';
         }
     } catch (error) {
         console.error('Error loading user profile:', error);

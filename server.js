@@ -114,7 +114,7 @@ const userSchema = new mongoose.Schema({
   },
   profilePicture: {
     type: String,
-    default: '/uploads/default-avatar.png'
+    default: '/uploads/default-avatar.svg'
   }
 });
 
@@ -769,7 +769,7 @@ app.post('/api/update-profile', profileUpload.single('profilePicture'), async (r
     // Update profile picture if provided
     if (profilePictureFile) {
       // Delete old profile picture if it exists
-      if (user.profilePicture && user.profilePicture !== '/uploads/default-avatar.png') {
+      if (user.profilePicture && user.profilePicture !== '/uploads/default-avatar.svg') {
         const oldPicturePath = user.profilePicture.replace('/uploads/', 'uploads/');
         if (fs.existsSync(oldPicturePath)) {
           fs.unlinkSync(oldPicturePath);
@@ -939,7 +939,7 @@ app.post('/api/delete-account', async (req, res) => {
     }
     
     // Delete user's profile picture if it exists
-    if (user.profilePicture && user.profilePicture !== '/uploads/default-avatar.png') {
+    if (user.profilePicture && user.profilePicture !== '/uploads/default-avatar.svg') {
       const profilePicturePath = user.profilePicture.replace('/uploads/', 'uploads/');
       if (fs.existsSync(profilePicturePath)) {
         fs.unlinkSync(profilePicturePath);
