@@ -10,9 +10,12 @@ const cloudinary = require('cloudinary').v2;
 // Optional AI dependencies
 let GoogleGenerativeAI, pdfParse;
 try {
-  GoogleGenerativeAI = require('@google/generative-ai').GoogleGenerativeAI;
+  const genAI = require('@google/generative-ai');
+  GoogleGenerativeAI = genAI.GoogleGenerativeAI;
   pdfParse = require('pdf-parse');
   console.log('AI dependencies loaded successfully');
+  console.log('GoogleGenerativeAI available:', !!GoogleGenerativeAI);
+  console.log('pdfParse available:', !!pdfParse);
 } catch (error) {
   console.error('Failed to load AI dependencies:', error);
   console.log('AI features will be disabled');
@@ -31,6 +34,11 @@ cloudinary.config({
 // Google Gemini AI configuration (optional)
 let genAI = null;
 try {
+  console.log('Checking AI setup:');
+  console.log('- GoogleGenerativeAI available:', !!GoogleGenerativeAI);
+  console.log('- GEMINI_API_KEY available:', !!process.env.GEMINI_API_KEY);
+  console.log('- GEMINI_API_KEY length:', process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0);
+  
   if (GoogleGenerativeAI && process.env.GEMINI_API_KEY) {
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     console.log('Gemini AI initialized successfully');
@@ -284,6 +292,11 @@ function validatePassword(password) {
 // AI Feedback Generation Function
 async function generateAIFeedback(pdfBuffer, title, context) {
   try {
+    console.log('AI Feedback Debug:');
+    console.log('- genAI available:', !!genAI);
+    console.log('- pdfParse available:', !!pdfParse);
+    console.log('- GEMINI_API_KEY available:', !!process.env.GEMINI_API_KEY);
+    
     // Check if AI dependencies are available
     if (!genAI || !pdfParse || !process.env.GEMINI_API_KEY) {
       console.log('AI dependencies not available, skipping AI feedback');
