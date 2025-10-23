@@ -941,7 +941,7 @@ async function initializeSampleData() {
 }
 
 // Set up periodic hashtag usage count updates (every 6 hours)
-setInterval(updateHashtagUsageCounts, 6 * 60 * 60 * 1000); // 6 hours in milliseconds
+setInterval(updateHashtagUsageCounts, 6 * 60 * 60 * 1000);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

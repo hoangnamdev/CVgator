@@ -1003,8 +1003,8 @@ textarea:focus {
 /* Recruit Page Styles */
 .recruit-container {
     max-width: 1200px;
-    margin: 40px auto 0 auto;
-    padding: 20px 40px;
+    margin: 60px auto 0 auto;
+    padding: 30px 50px;
 }
 
 .recruit-header {
@@ -1378,8 +1378,8 @@ textarea:focus {
 /* Publish CV Page Styles */
 .publish-cv-container {
     max-width: 600px;
-    margin: 40px auto 0 auto;
-    padding: 20px 40px;
+    margin: 60px auto 0 auto;
+    padding: 30px 50px;
 }
 
 .publish-cv-header {
