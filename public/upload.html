@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVgator - Upload CV</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/">CVgator</a>
+            </div>
+            <div class="nav-menu">
+                <a href="/submissions" class="nav-link">Submissions</a>
+                <a href="/recruit" class="nav-link">Recruit</a>
+                <a href="/mission" class="nav-link">Mission</a>
+            </div>
+            <!-- Login button or user profile will be added here by JavaScript -->
+        </div>
+    </nav>
+
+    <div class="upload-container">
+        <div class="upload-content">
+            <div class="upload-header">
+                <h1>Upload Your CV</h1>
+                <p>Share your CV and get feedback from the community</p>
+            </div>
+
+            <form id="uploadForm" class="upload-form" enctype="multipart/form-data">
+                <div class="form-group">
+                    <input 
+                        type="text" 
+                        id="postTitle" 
+                        name="title" 
+                        placeholder="Post title" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <input 
+                        type="text" 
+                        id="hashtags" 
+                        name="hashtags" 
+                        placeholder="Hashtags (e.g., software-engineer web-development)" 
+                        required
+                    >
+                    <small class="form-help">Separate hashtags with spaces. Don't include the # symbol.</small>
+                    <div id="hashtagSuggestions" class="hashtag-suggestions"></div>
+                </div>
+
+                <div class="form-group">
+                    <textarea 
+                        id="context" 
+                        name="context" 
+                        placeholder="Context and description..." 
+                        rows="5"
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="file-upload-group">
+                    <div class="file-upload-wrapper">
+                        <button type="button" id="attachBtn" class="attach-btn">
+                            📎 Attach CV
+                        </button>
+                        <span class="disclaimer-text" id="disclaimerText">
+                            DISCLAIMER: CVs must be in .pdf format.
+                        </span>
+                    </div>
+                    <input 
+                        type="file" 
+                        id="cvFile" 
+                        name="cvFile" 
+                        accept=".pdf" 
+                        style="display: none;"
+                        required
+                    >
+                    <div class="error-message" id="fileError" style="display: none;">
+                        *The uploaded file is not a .pdf file!
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="upload-submit-btn">
+                        Upload CV
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="navbar.js"></script>
+    <script src="upload.js"></script>
+</body>
+</html>

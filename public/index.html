@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVgator - Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/">CVgator</a>
+            </div>
+            <div class="nav-menu">
+                <a href="/submissions" class="nav-link">Submissions</a>
+                <a href="/recruit" class="nav-link">Recruit</a>
+                <a href="/mission" class="nav-link">Mission</a>
+            </div>
+            <!-- Login button or user profile will be added here by JavaScript -->
+        </div>
+    </nav>
+    <div class="login-page">
+        <div class="container">
+        <div class="login-container">
+            <h1>CVgator</h1>
+            <p class="subtitle">Your CV sharing platform</p>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        placeholder="Username" 
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Password" 
+                        required
+                    >
+                </div>
+                
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+            
+            <div class="register-section">
+                <p>Don't have an account?</p>
+                <button onclick="window.location.href='/register'" class="register-btn">
+                    Register
+                </button>
+            </div>
+        </div>
+        </div>
+    </div>
+    
+    <script src="navbar.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

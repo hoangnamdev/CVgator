@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVgator - Submissions</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/">CVgator</a>
+            </div>
+            <div class="nav-menu">
+                <a href="/submissions" class="nav-link">Submissions</a>
+                <a href="/recruit" class="nav-link">Recruit</a>
+                <a href="/mission" class="nav-link">Mission</a>
+            </div>
+            <!-- Login button or user profile will be added here by JavaScript -->
+        </div>
+    </nav>
+
+    <div class="submissions-container">
+        <div class="hashtag-sidebar">
+            <h3>Popular Tags</h3>
+            <ul class="hashtag-list">
+                <!-- Hashtags will be loaded dynamically -->
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">CV Submissions</h1>
+                <a href="/upload" class="upload-btn">Upload CV</a>
+            </div>
+
+            <ul class="post-list" id="postList">
+                <!-- Posts will be dynamically loaded here -->
+            </ul>
+        </div>
+    </div>
+
+    <script src="navbar.js"></script>
+    <script src="submissions.js"></script>
+</body>
+</html>

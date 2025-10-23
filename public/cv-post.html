@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVgator - CV Post</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/">CVgator</a>
+            </div>
+            <div class="nav-menu">
+                <a href="/submissions" class="nav-link">Submissions</a>
+                <a href="/recruit" class="nav-link">Recruit</a>
+                <a href="/mission" class="nav-link">Mission</a>
+            </div>
+            <!-- Login button or user profile will be added here by JavaScript -->
+        </div>
+    </nav>
+
+    <div class="cv-post-container">
+        <div class="cv-content">
+            <div class="cv-header">
+                <h1 class="cv-title" id="cvTitle">Sample CV: Software Engineer Position</h1>
+                <div class="cv-meta">
+                    <span class="post-author">Posted by: <strong id="cvAuthor">john_doe</strong></span>
+                    <span class="post-date" id="cvDate">2 hours ago</span>
+                </div>
+            </div>
+
+            <div class="cv-context" id="contextSection">
+                <h3>Context & Additional Information</h3>
+                <p>Loading context...</p>
+            </div>
+
+            <div class="cv-document">
+                <div class="cv-view-section" id="cvDocumentContent">
+                    <div class="cv-icon">📄</div>
+                    <h3>CV Document</h3>
+                    <p>Click the button below to view the full CV</p>
+                    <a href="#" id="cvLink" class="view-cv-btn">View CV</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="comments-section">
+            <h2 class="comments-title">Comments & Feedback</h2>
+            
+            <!-- AI Comment -->
+            <div class="ai-comment">
+                <div class="ai-comment-header">
+                    <div class="ai-avatar">AI</div>
+                    <strong>AI Assistant</strong>
+                </div>
+                <p>This is a placeholder AI comment that will provide automated feedback on the CV. The AI will analyze the CV content and provide suggestions for improvement based on industry standards and best practices.</p>
+            </div>
+
+            <!-- Comment Form -->
+            <form class="comment-form" id="commentForm">
+                <textarea 
+                    class="comment-textarea" 
+                    placeholder="Share your feedback and suggestions for improving this CV..."
+                    id="commentText"
+                    required
+                ></textarea>
+                <button type="submit" class="comment-submit">Post Comment</button>
+            </form>
+
+            <!-- Comments List -->
+            <div id="commentsList">
+                <!-- Comments will be dynamically loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="navbar.js"></script>
+    <script src="cv-post.js"></script>
+</body>
+</html>
