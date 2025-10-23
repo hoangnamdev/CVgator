@@ -8,14 +8,14 @@ const path = require('path');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 // Optional AI dependencies
-let GoogleGenerativeAI, pdfParse;
+let GoogleGenerativeAI, pdfjsLib;
 try {
   const genAI = require('@google/generative-ai');
   GoogleGenerativeAI = genAI.GoogleGenerativeAI;
-  pdfParse = require('pdf-parse');
+  pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
   console.log('AI dependencies loaded successfully');
   console.log('GoogleGenerativeAI available:', !!GoogleGenerativeAI);
-  console.log('pdfParse available:', !!pdfParse);
+  console.log('pdfjsLib available:', !!pdfjsLib);
 } catch (error) {
   console.error('Failed to load AI dependencies:', error);
   console.log('AI features will be disabled');
@@ -294,18 +294,26 @@ async function generateAIFeedback(pdfBuffer, title, context) {
   try {
     console.log('AI Feedback Debug:');
     console.log('- genAI available:', !!genAI);
-    console.log('- pdfParse available:', !!pdfParse);
+    console.log('- pdfjsLib available:', !!pdfjsLib);
     console.log('- GEMINI_API_KEY available:', !!process.env.GEMINI_API_KEY);
     
     // Check if AI dependencies are available
-    if (!genAI || !pdfParse || !process.env.GEMINI_API_KEY) {
+    if (!genAI || !pdfjsLib || !process.env.GEMINI_API_KEY) {
       console.log('AI dependencies not available, skipping AI feedback');
       return 'AI feedback is not available.';
     }
 
-    // Extract text from PDF
-    const pdfData = await pdfParse(pdfBuffer);
-    const cvText = pdfData.text;
+    // Extract text from PDF using pdfjs-dist
+    const loadingTask = pdfjsLib.getDocument({ data: pdfBuffer });
+    const pdf = await loadingTask.promise;
+    let cvText = '';
+    
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(' ');
+      cvText += pageText + '\n';
+    }
     
     // Truncate text if too long (Gemini has token limits)
     const maxLength = 8000; // Leave room for prompt
@@ -1589,6 +1597,38 @@ app.get('/download-cv/:postId', async (req, res) => {
     
     request.on('error', (error) => {
       console.error('Error fetching PDF from Cloudinary:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Error downloading CV' 
+      });
+    });
+    
+    request.end();
+  } catch (error) {
+    console.error('Error serving PDF:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error downloading CV' 
+    });
+  }
+});
+
+// Set up periodic hashtag usage count updates (every 6 hours)
+setInterval(updateHashtagUsageCounts, 6 * 60 * 60 * 1000);
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Health check available at: http://localhost:${PORT}/api/health`);
+  
+  // Only initialize sample data in development (non-blocking)
+  if (process.env.NODE_ENV !== 'production') {
+    initializeSampleData().catch(err => {
+      console.error('Sample data initialization failed:', err);
+      console.log('Server continues without sample data');
+    });
+  }
+});
+
       res.status(500).json({ 
         success: false, 
         message: 'Error downloading CV' 
