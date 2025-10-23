@@ -294,8 +294,11 @@ function openCV(cvLink) {
 }
 
 function toggleContactInfo(button) {
+    console.log('Contact button clicked!'); // Debug log
     const bubble = button.nextElementSibling;
+    console.log('Bubble element:', bubble); // Debug log
     const isVisible = bubble.style.display !== 'none';
+    console.log('Is visible:', isVisible); // Debug log
     
     // Close all other contact bubbles
     document.querySelectorAll('.contact-bubble').forEach(b => {
@@ -304,4 +307,5 @@ function toggleContactInfo(button) {
     
     // Toggle current bubble
     bubble.style.display = isVisible ? 'none' : 'block';
+    console.log('Bubble display set to:', bubble.style.display); // Debug log
 }

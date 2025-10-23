@@ -1347,7 +1347,21 @@ textarea:focus {
     padding: 20px;
     margin-top: 10px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-    z-index: 10;
+    z-index: 1000;
+    max-width: 100%;
+    word-wrap: break-word;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .contact-info h4 {
