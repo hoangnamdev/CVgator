@@ -69,7 +69,7 @@ function displayCVPost(post) {
             <div class="cv-icon">📄</div>
             <h3>CV Document</h3>
             <p>Click the button below to view the full CV</p>
-            <a href="${post.link}" id="cvLink" class="view-cv-btn" target="_blank">View CV</a>
+            <a href="${post.link}" id="cvLink" class="view-cv-btn" target="_blank" download="CV.pdf">View CV</a>
         `;
     } else {
         cvDocumentContent.innerHTML = `

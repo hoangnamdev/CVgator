@@ -296,7 +296,14 @@ function createCandidateCard(recruit) {
 }
 
 function openCV(cvLink) {
-    window.open(cvLink, '_blank');
+    // Create a temporary link element to download the file with proper extension
+    const link = document.createElement('a');
+    link.href = cvLink;
+    link.download = 'CV.pdf'; // Force download with .pdf extension
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 function toggleContactInfo(button) {

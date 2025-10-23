@@ -1027,7 +1027,9 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
           folder: 'cvgator/cvs',
           resource_type: 'raw',
           use_filename: true,
-          unique_filename: true
+          unique_filename: true,
+          filename_override: `${Date.now()}-${cvFile.originalname}`,
+          public_id: `${Date.now()}-${cvFile.originalname.replace('.pdf', '')}`
         }
       );
     } catch (uploadError) {
