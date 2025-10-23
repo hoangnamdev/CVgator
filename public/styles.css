@@ -1004,7 +1004,7 @@ textarea:focus {
 .recruit-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 20px 40px;
 }
 
 .recruit-header {
@@ -1100,13 +1100,16 @@ textarea:focus {
     margin-bottom: 30px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     border: 1px solid #e8f0ff;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
+    display: none;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
 }
 
 .filter-panel.active {
-    max-height: 1000px;
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .filter-section {
@@ -1376,7 +1379,7 @@ textarea:focus {
 .publish-cv-container {
     max-width: 600px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 20px 40px;
 }
 
 .publish-cv-header {
@@ -1484,6 +1487,14 @@ textarea:focus {
 
 /* Responsive design for recruit page */
 @media (max-width: 768px) {
+    .recruit-container {
+        padding: 20px 20px;
+    }
+    
+    .publish-cv-container {
+        padding: 20px 20px;
+    }
+    
     .candidates-row {
         grid-template-columns: 1fr;
     }
@@ -1503,6 +1514,16 @@ textarea:focus {
     
     .publish-cv-header h1 {
         font-size: 2.2em;
+    }
+}
+
+@media (max-width: 480px) {
+    .recruit-container {
+        padding: 15px 15px;
+    }
+    
+    .publish-cv-container {
+        padding: 15px 15px;
     }
 }
     
