@@ -195,6 +195,10 @@ document.getElementById('commentForm').addEventListener('submit', async function
             // Clear the form
             document.getElementById('commentText').value = '';
             
+            // Re-enable button after successful comment
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Post Comment';
+            
             // Reload comments to show the new one
             loadComments();
         } else {
