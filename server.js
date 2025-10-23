@@ -1306,6 +1306,9 @@ app.post('/api/delete-account', async (req, res) => {
 
 // CV Upload API
 app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
+  const startTime = Date.now();
+  console.log('Upload started at:', new Date().toISOString());
+  
   try {
     const { title, hashtags, context } = req.body;
     const cvFile = req.file;
@@ -1327,6 +1330,8 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
     }
 
     // Upload file to Cloudinary
+    console.log('Starting Cloudinary upload...');
+    const cloudinaryStartTime = Date.now();
     let cloudinaryResult;
     try {
       cloudinaryResult = await cloudinary.uploader.upload(
@@ -1338,6 +1343,8 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
           unique_filename: true
         }
       );
+      const cloudinaryTime = Date.now() - cloudinaryStartTime;
+      console.log(`Cloudinary upload completed in ${cloudinaryTime}ms`);
     } catch (uploadError) {
       console.error('Cloudinary upload error:', uploadError);
       return res.status(500).json({ 
@@ -1416,7 +1423,11 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
       aiFeedback: aiFeedback
     });
 
+    console.log('Saving post to database...');
+    const dbStartTime = Date.now();
     await post.save();
+    const dbTime = Date.now() - dbStartTime;
+    console.log(`Database save completed in ${dbTime}ms`);
 
     // Start AI feedback generation in background (don't await)
     generateAIFeedbackAsync(post._id, cvFile.buffer, title.trim(), context.trim())
@@ -1431,6 +1442,9 @@ app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
       .catch(error => {
         console.error('Background hashtag usage count update failed:', error);
       });
+
+    const totalTime = Date.now() - startTime;
+    console.log(`Total upload time: ${totalTime}ms`);
 
     res.json({ 
       success: true, 
