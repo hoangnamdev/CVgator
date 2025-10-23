@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruit - CVgator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/">CVgator</a>
+            </div>
+            <div class="nav-menu">
+                <a href="/submissions" class="nav-link">Submissions</a>
+                <a href="/hashtags" class="nav-link">Hashtags</a>
+                <a href="/recruit" class="nav-link active">Recruit</a>
+                <a href="/mission" class="nav-link">Mission</a>
+            </div>
+            <!-- Login button or user profile will be added here by JavaScript -->
+        </div>
+    </nav>
+
+    <div class="recruit-container">
+        <div class="recruit-header">
+            <h1>Find Talent</h1>
+            <p>Discover skilled professionals ready to join your team</p>
+        </div>
+
+        <div class="recruit-actions">
+            <button class="filter-btn" id="filterBtn">
+                <span>Filter</span>
+                <span class="filter-icon">▼</span>
+            </button>
+            <a href="/publish-cv" class="publish-cv-btn">Publish CV</a>
+        </div>
+
+        <div class="filter-panel" id="filterPanel">
+            <div class="filter-section">
+                <h3>Years of Experience</h3>
+                <div class="filter-options">
+                    <div class="filter-option" data-filter="experience" data-value="entry-level">
+                        &lt;1 year
+                    </div>
+                    <div class="filter-option" data-filter="experience" data-value="junior">
+                        &lt;2 years
+                    </div>
+                    <div class="filter-option" data-filter="experience" data-value="mid-level">
+                        &lt;5 years
+                    </div>
+                    <div class="filter-option" data-filter="experience" data-value="senior">
+                        5+ years
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3>Technologies</h3>
+                <div class="filter-options" id="technologiesFilter">
+                    <!-- Technologies will be loaded dynamically -->
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3>Field of Work</h3>
+                <div class="filter-options" id="fieldsFilter">
+                    <!-- Fields will be loaded dynamically -->
+                </div>
+            </div>
+
+            <div class="filter-actions">
+                <button class="clear-filters-btn" id="clearFiltersBtn">Clear All</button>
+                <button class="apply-filters-btn" id="applyFiltersBtn">Apply Filters</button>
+            </div>
+        </div>
+
+        <div class="candidates-grid" id="candidatesGrid">
+            <!-- Candidates will be loaded here -->
+        </div>
+
+        <div class="no-candidates" id="noCandidates" style="display: none;">
+            No candidates match your current filters. Try adjusting your search criteria.
+        </div>
+    </div>
+
+    <script src="navbar.js"></script>
+    <script src="recruit.js"></script>
+</body>
+</html>

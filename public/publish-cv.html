@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publish CV - CVgator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/">CVgator</a>
+            </div>
+            <div class="nav-menu">
+                <a href="/submissions" class="nav-link">Submissions</a>
+                <a href="/hashtags" class="nav-link">Hashtags</a>
+                <a href="/recruit" class="nav-link">Recruit</a>
+                <a href="/mission" class="nav-link">Mission</a>
+            </div>
+            <!-- Login button or user profile will be added here by JavaScript -->
+        </div>
+    </nav>
+
+    <div class="publish-cv-container">
+        <div class="publish-cv-header">
+            <h1>Publish Your CV</h1>
+            <p>Make your CV visible to potential employers</p>
+        </div>
+
+        <form class="publish-cv-form" id="publishCvForm">
+            <div class="form-group">
+                <label for="fullName">Full Name</label>
+                <input type="text" id="fullName" name="fullName" placeholder="Full name (to display on your published profile)" required>
+            </div>
+
+            <div class="form-group">
+                <label for="cvSelect">Select CV</label>
+                <select id="cvSelect" name="cvSelect" required>
+                    <option value="">Select CV</option>
+                    <!-- CVs will be loaded dynamically -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="contactInfo">Contact Information</label>
+                <textarea id="contactInfo" name="contactInfo" rows="4" placeholder="Contact information: email, phone number, social media..." required></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="publish-btn">Publish CV</button>
+                <p class="consent-text">By publishing this CV, I acknowledge that the information is true and accurate, and I consent to the use of my personal data for recruitment purposes.</p>
+            </div>
+        </form>
+    </div>
+
+    <script src="navbar.js"></script>
+    <script src="publish-cv.js"></script>
+</body>
+</html>

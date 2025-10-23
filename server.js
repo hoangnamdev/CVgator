@@ -172,6 +172,38 @@ const hashtagSchema = new mongoose.Schema({
 
 const Hashtag = mongoose.model('Hashtag', hashtagSchema);
 
+// Recruit Schema (for published CVs)
+const recruitSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  contactInformation: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  postId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post',
+    required: true
+  },
+  authorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  publishedAt: {
+    type: Date,
+    default: Date.now
+  }
+}, {
+  timestamps: true
+});
+
+const Recruit = mongoose.model('Recruit', recruitSchema);
+
 // Validation functions
 function validateEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -223,6 +255,14 @@ app.get('/upload', (req, res) => {
 
 app.get('/hashtags', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'hashtags.html'));
+});
+
+app.get('/recruit', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'recruit.html'));
+});
+
+app.get('/publish-cv', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'publish-cv.html'));
 });
 
 // Serve uploaded files
@@ -450,6 +490,123 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
+// Recruit API endpoints
+app.get('/api/recruits', async (req, res) => {
+  try {
+    const { experience, technologies, fields } = req.query;
+    
+    // Build filter query
+    let filterQuery = {};
+    
+    if (experience || technologies || fields) {
+      const tagFilters = [];
+      
+      if (experience) {
+        tagFilters.push(experience);
+      }
+      
+      if (technologies) {
+        const techArray = technologies.split(',');
+        tagFilters.push(...techArray);
+      }
+      
+      if (fields) {
+        const fieldArray = fields.split(',');
+        tagFilters.push(...fieldArray);
+      }
+      
+      // Find posts that contain ALL the required tags
+      const matchingPosts = await Post.find({
+        tags: { $all: tagFilters.map(tag => '#' + tag) }
+      });
+      
+      const postIds = matchingPosts.map(post => post._id);
+      filterQuery.postId = { $in: postIds };
+    }
+    
+    const recruits = await Recruit.find(filterQuery)
+      .populate('postId')
+      .sort({ publishedAt: -1 });
+    
+    res.json({ success: true, recruits });
+  } catch (error) {
+    console.error('Error fetching recruits:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.get('/api/user-posts', async (req, res) => {
+  try {
+    // For now, return all posts. In a real app, this would filter by user
+    const posts = await Post.find({}, 'title createdAt')
+      .sort({ createdAt: -1 });
+    
+    res.json({ success: true, posts });
+  } catch (error) {
+    console.error('Error fetching user posts:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.post('/api/publish-cv', async (req, res) => {
+  try {
+    const { fullName, cvSelect, contactInfo } = req.body;
+    
+    if (!fullName || !cvSelect || !contactInfo) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'All fields are required' 
+      });
+    }
+    
+    // Check if post exists
+    const post = await Post.findById(cvSelect);
+    if (!post) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Selected CV not found' 
+      });
+    }
+    
+    // Check if already published
+    const existingRecruit = await Recruit.findOne({ postId: cvSelect });
+    if (existingRecruit) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'This CV is already published' 
+      });
+    }
+    
+    // Create recruit entry
+    const recruit = new Recruit({
+      name: fullName.trim(),
+      contactInformation: contactInfo.trim(),
+      postId: cvSelect,
+      authorId: post.authorId
+    });
+    
+    await recruit.save();
+    
+    res.json({ 
+      success: true, 
+      message: 'CV published successfully',
+      recruit: {
+        _id: recruit._id,
+        name: recruit.name,
+        contactInformation: recruit.contactInformation,
+        publishedAt: recruit.publishedAt
+      }
+    });
+    
+  } catch (error) {
+    console.error('Publish CV error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error during publishing' 
+    });
+  }
+});
+
 // CV Upload API
 app.post('/api/upload-cv', upload.single('cvFile'), async (req, res) => {
   try {
@@ -610,18 +767,55 @@ async function initializeSampleData() {
       console.log('No hashtags found, creating sample hashtags...');
       
       const techHashtags = [
-        'design', 'ui-ux', 'typography', 'marketing', 'software-engineer',
-        'junior', 'senior', 'entry-level', 'data-science', 'algorithms',
-        'project-lead', 'frontend', 'backend', 'full-stack', 'web-development',
-        'mobile-development', 'ios', 'android', 'react', 'angular',
-        'vue', 'nodejs', 'python', 'java', 'javascript',
-        'typescript', 'sql', 'mongodb', 'aws', 'azure',
-        'devops', 'machine-learning', 'artificial-intelligence', 'blockchain',
-        'cybersecurity', 'product-manager', 'business-analyst', 'sales',
-        'customer-success', 'content-marketing', 'social-media', 'seo',
-        'analytics', 'user-research', 'wireframing', 'prototyping',
-        'agile', 'scrum', 'remote', 'freelance', 'startup',
-        'enterprise', 'fintech', 'healthtech', 'edtech', 'ecommerce'
+        // Experience Levels
+        'entry-level', 'junior', 'mid-level', 'senior',
+        
+        // Technologies - Programming Languages
+        'python', 'java', 'javascript', 'typescript', 'csharp', 'cpp', 'c', 'go', 'rust', 'kotlin',
+        'swift', 'php', 'ruby', 'scala', 'r', 'matlab', 'perl', 'haskell', 'clojure', 'elixir',
+        
+        // Technologies - Web Development
+        'react', 'angular', 'vue', 'nodejs', 'express', 'django', 'flask', 'spring', 'laravel',
+        'rails', 'aspnet', 'nextjs', 'nuxt', 'svelte', 'ember', 'backbone', 'jquery',
+        
+        // Technologies - Mobile Development
+        'ios', 'android', 'react-native', 'flutter', 'xamarin', 'ionic', 'cordova',
+        
+        // Technologies - Databases
+        'sql', 'mongodb', 'postgresql', 'mysql', 'redis', 'elasticsearch', 'cassandra',
+        'dynamodb', 'firebase', 'supabase', 'sqlite', 'oracle', 'sql-server',
+        
+        // Technologies - Cloud & DevOps
+        'aws', 'azure', 'gcp', 'docker', 'kubernetes', 'terraform', 'jenkins', 'gitlab',
+        'github-actions', 'ansible', 'chef', 'puppet', 'vagrant', 'nginx', 'apache',
+        
+        // Technologies - Data & AI
+        'machine-learning', 'artificial-intelligence', 'deep-learning', 'tensorflow',
+        'pytorch', 'pandas', 'numpy', 'scikit-learn', 'opencv', 'spark', 'hadoop',
+        'kafka', 'airflow', 'jupyter', 'tableau', 'power-bi', 'looker',
+        
+        // Fields of Work
+        'frontend', 'backend', 'full-stack', 'mobile-development', 'web-development',
+        'data-science', 'data-analytics', 'devops', 'cloud-engineering', 'cybersecurity',
+        'product-manager', 'project-manager', 'business-analyst', 'qa-engineer',
+        'ui-ux', 'design', 'graphic-design', 'product-design', 'user-research',
+        'marketing', 'digital-marketing', 'content-marketing', 'social-media',
+        'seo', 'sem', 'analytics', 'growth-hacking', 'sales', 'customer-success',
+        'technical-writing', 'documentation', 'training', 'consulting',
+        
+        // Specializations
+        'blockchain', 'cryptocurrency', 'fintech', 'healthtech', 'edtech', 'ecommerce',
+        'gaming', 'iot', 'embedded-systems', 'robotics', 'computer-vision',
+        'natural-language-processing', 'recommendation-systems', 'microservices',
+        'api-development', 'graphql', 'rest', 'websockets', 'real-time-systems',
+        
+        // Methodologies & Practices
+        'agile', 'scrum', 'kanban', 'lean', 'tdd', 'bdd', 'ci-cd', 'test-automation',
+        'code-review', 'pair-programming', 'refactoring', 'clean-code',
+        
+        // Work Arrangements
+        'remote', 'freelance', 'contract', 'part-time', 'full-time', 'startup',
+        'enterprise', 'consulting', 'agency', 'non-profit'
       ];
       
       const hashtagDocs = techHashtags.map(name => ({ name, usageCount: 0 }));
