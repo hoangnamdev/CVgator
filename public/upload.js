@@ -75,6 +75,10 @@ function setupFormSubmission() {
     uploadForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        // Prevent double submission
+        const submitBtn = uploadForm.querySelector('button[type="submit"]');
+        if (submitBtn.disabled) return;
+        
         // Get form data
         const formData = new FormData();
         const title = document.getElementById('postTitle').value.trim();
@@ -125,6 +129,10 @@ function setupFormSubmission() {
         formData.append('authorName', userData.username);
         formData.append('authorId', userData.id);
         
+        // Disable button to prevent double submission
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Uploading...';
+        
         try {
             const response = await fetch('/api/upload-cv', {
                 method: 'POST',
@@ -138,10 +146,16 @@ function setupFormSubmission() {
                 window.location.href = '/submissions';
             } else {
                 alert(data.message || 'Failed to upload CV. Please try again.');
+                // Re-enable button on error
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Upload CV';
             }
         } catch (error) {
             console.error('Upload error:', error);
             alert('An error occurred during upload. Please try again.');
+            // Re-enable button on error
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Upload CV';
         }
     });
 }

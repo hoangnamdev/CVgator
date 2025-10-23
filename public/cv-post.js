@@ -41,17 +41,11 @@ function displayCVPost(post) {
     document.getElementById('cvDate').textContent = formattedDate;
     
     // Update context section
-    const contextSection = document.getElementById('contextSection');
+    const contextText = document.getElementById('contextText');
     if (post.text && post.text.trim()) {
-        contextSection.innerHTML = `
-            <h3>Context & Additional Information</h3>
-            <p>${post.text}</p>
-        `;
+        contextText.textContent = post.text;
     } else {
-        contextSection.innerHTML = `
-            <h3>Context & Additional Information</h3>
-            <p><em>No additional context provided by the author.</em></p>
-        `;
+        contextText.innerHTML = '<em>No additional context provided by the author.</em>';
     }
     
     // Update CV link or show placeholder
@@ -154,6 +148,10 @@ function createCommentElement(comment) {
 document.getElementById('commentForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
+    // Prevent double submission
+    const submitBtn = document.querySelector('#commentForm button[type="submit"]');
+    if (submitBtn.disabled) return;
+    
     const commentText = document.getElementById('commentText').value.trim();
     if (!commentText) {
         alert('Please enter a comment before submitting.');
@@ -173,6 +171,10 @@ document.getElementById('commentForm').addEventListener('submit', async function
         alert('Post not found.');
         return;
     }
+
+    // Disable button to prevent double submission
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Posting...';
 
     try {
         const response = await fetch(`/api/posts/${postId}/comments`, {
@@ -197,10 +199,16 @@ document.getElementById('commentForm').addEventListener('submit', async function
             loadComments();
         } else {
             alert(data.message || 'Failed to post comment. Please try again.');
+            // Re-enable button on error
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Post Comment';
         }
     } catch (error) {
         console.error('Error posting comment:', error);
         alert('Failed to post comment. Please try again.');
+        // Re-enable button on error
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Post Comment';
     }
 });
 

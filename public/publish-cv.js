@@ -70,6 +70,10 @@ function setupFormSubmission() {
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        // Prevent double submission
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn.disabled) return;
+        
         const user = JSON.parse(sessionStorage.getItem('user'));
         if (!user) {
             alert('You need to login in order to publish your CV!');
@@ -86,6 +90,10 @@ function setupFormSubmission() {
         };
         
         console.log('Publishing CV with data:', data);
+        
+        // Disable button to prevent double submission
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Publishing...';
         
         try {
             const response = await fetch('/api/publish-cv', {
@@ -105,10 +113,16 @@ function setupFormSubmission() {
                 window.location.href = '/recruit';
             } else {
                 alert('Error: ' + result.message);
+                // Re-enable button on error
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Publish CV';
             }
         } catch (error) {
             console.error('Error publishing CV:', error);
             alert('An error occurred while publishing your CV. Please try again.');
+            // Re-enable button on error
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Publish CV';
         }
     });
 }
