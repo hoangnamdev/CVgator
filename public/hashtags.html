@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hashtags - CVgator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="navbar-container"></div>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>Browse Hashtags</h1>
+            <p>Select hashtags to filter CV submissions</p>
+        </div>
+        
+        <div class="hashtags-section">
+            <div class="hashtags-controls">
+                <button id="sortBtn" class="btn btn-primary" onclick="sortBySelectedTags()" disabled>
+                    Sort
+                </button>
+                <button class="btn btn-secondary" onclick="clearSelection()">
+                    Clear Selection
+                </button>
+            </div>
+            
+            <div id="hashtagsGrid" class="hashtags-grid">
+                <!-- Hashtags will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <script src="navbar.js"></script>
+    <script src="hashtags.js"></script>
+    
+    <script>
+        function clearSelection() {
+            selectedHashtags = [];
+            document.querySelectorAll('.hashtag-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            updateSortButton();
+        }
+    </script>
+</body>
+</html>

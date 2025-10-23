@@ -221,6 +221,10 @@ app.get('/upload', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'upload.html'));
 });
 
+app.get('/hashtags', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'hashtags.html'));
+});
+
 // Serve uploaded files
 app.use('/uploads', express.static('uploads'));
 
