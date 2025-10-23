@@ -8,7 +8,7 @@ const path = require('path');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 // Optional AI dependencies - completely optional
-let GoogleGenerativeAI, pdfjsLib;
+let GoogleGenerativeAI, pdfParse;
 try {
   console.log('Attempting to load AI dependencies...');
   const genAI = require('@google/generative-ai');
@@ -20,14 +20,14 @@ try {
 }
 
 try {
-  pdfjsLib = require('pdfjs-dist');
-  console.log('pdfjsLib loaded successfully');
+  pdfParse = require('pdf-parse');
+  console.log('pdf-parse loaded successfully');
 } catch (error) {
-  console.log('pdfjsLib not available:', error.message);
-  pdfjsLib = null;
+  console.log('pdf-parse not available:', error.message);
+  pdfParse = null;
 }
 
-console.log('AI setup complete - GoogleGenerativeAI:', !!GoogleGenerativeAI, 'pdfjsLib:', !!pdfjsLib);
+console.log('AI setup complete - GoogleGenerativeAI:', !!GoogleGenerativeAI, 'pdf-parse:', !!pdfParse);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -301,40 +301,30 @@ function validatePassword(password) {
 async function generateAIFeedback(pdfBuffer, title, context) {
   try {
     console.log('AI Feedback Debug:');
-    console.log('- genAI available:', !!genAI);
-    console.log('- pdfjsLib available:', !!pdfjsLib);
+    console.log('- GoogleGenerativeAI available:', !!GoogleGenerativeAI);
+    console.log('- pdf-parse available:', !!pdfParse);
     console.log('- GEMINI_API_KEY available:', !!process.env.GEMINI_API_KEY);
     
     // Check if AI dependencies are available
-    if (!genAI || !pdfjsLib || !process.env.GEMINI_API_KEY) {
+    if (!GoogleGenerativeAI || !pdfParse || !process.env.GEMINI_API_KEY) {
       console.log('AI dependencies not available, skipping AI feedback');
       return 'AI feedback is not available.';
     }
 
-    // Extract text from PDF using pdfjs-dist with timeout
+    // Extract text from PDF using pdf-parse with timeout
     console.log('Starting PDF text extraction...');
-    const loadingTask = pdfjsLib.getDocument({ data: pdfBuffer });
-    const pdf = await Promise.race([
-      loadingTask.promise,
-      new Promise((_, reject) => setTimeout(() => reject(new Error('PDF loading timeout')), 10000))
+    const pdfData = await Promise.race([
+      pdfParse(pdfBuffer),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('PDF parsing timeout')), 10000))
     ]);
     
-    let cvText = '';
-    console.log(`PDF loaded, processing ${pdf.numPages} pages...`);
-    
-    for (let i = 1; i <= pdf.numPages; i++) {
-      try {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map(item => item.str).join(' ');
-        cvText += pageText + '\n';
-      } catch (pageError) {
-        console.error(`Error processing page ${i}:`, pageError);
-        // Continue with other pages
-      }
-    }
-    
+    const cvText = pdfData.text;
     console.log(`PDF text extraction complete, ${cvText.length} characters extracted`);
+    
+    if (!cvText.trim()) {
+      console.log('No text extracted from PDF');
+      return 'AI feedback is not available - unable to extract text from PDF.';
+    }
     
     // Truncate text if too long (Gemini has token limits)
     const maxLength = 8000; // Leave room for prompt
@@ -357,6 +347,7 @@ ${truncatedText}
 Please provide a professional, constructive analysis in 2-3 paragraphs. Be specific and actionable in your feedback.`;
 
     // Generate AI response with timeout
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     
     // Add timeout to prevent hanging
