@@ -1,92 +1,31 @@
-# CVgator
+# CVgator 🐊
 
-A forum-style platform for peer-reviewing CVs. Upload, get feedback, and become part of a network of job-seekers and recruiters alike.
+> **Status:** Archived Prototype (Deprecated)  
+> *A legacy full-stack exploration for peer-reviewed resume critiques and automated feedback pipelines. Decommissioned and preserved for UI/architectural reference.*
 
-## Features
+---
 
-- User authentication (login/register)
-- CV upload and sharing
-- Discussion forum
-- Business-focused features for hiring
+## Overview
 
-## Technologies Used
+CVgator was built as a prototype platform to test workflows around resume sharing, peer discussions, and automated PDF content extraction. 
 
-- **Frontend**: HTML, CSS, JavaScript
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB
+The focus of this build was rapid end-to-end implementation—standing up static client views, multipart upload handlers, and backend critique pipelines in a compact codebase.
 
-## Setup Instructions
+---
 
-### Prerequisites
+## Stack & Components
 
-- Node.js (v14 or higher)
-- MongoDB (running locally on port 27017)
+- **Client:** Semantic HTML5, CSS3, Vanilla JS
+- **Server:** Node.js, Express.js (REST routes)
+- **Database:** MongoDB / Mongoose (Legacy)
+- **Pipelines:** Multipart buffer handling, PDF text extraction (`pdf-parse`)
 
-### Installation
+---
 
-1. Clone or download the project
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+## Viewing the Layouts
 
-3. Make sure MongoDB is running on your local machine
+Backend services and database instances are offline. To inspect the frontend design and layouts locally:
 
-4. Start the server:
-   ```bash
-   npm start
-   ```
-
-   Or for development with auto-restart:
-   ```bash
-   npm run dev
-   ```
-
-5. Open your browser and navigate to `http://localhost:3000`
-
-## Current Features
-
-### Landing Page
-- Clean, modern design with gradient background
-- Login form with username and password fields
-- Register button that redirects to registration page
-
-### Registration Page
-- Email, username, and password fields
-- Client-side and server-side validation
-- Email format validation
-- Username and password character restrictions (letters and numbers only)
-
-### Authentication
-- Secure password hashing using bcrypt
-- Database validation for existing users
-- Proper error handling and user feedback
-
-## API Endpoints
-
-- `POST /api/login` - User login
-- `POST /api/register` - User registration
-- `GET /` - Landing page
-- `GET /register` - Registration page
-
-## Project Structure
-
-```
-cvgator/
-├── server.js          # Main server file
-├── package.json       # Dependencies and scripts
-├── public/            # Frontend files
-│   ├── index.html     # Landing page
-│   ├── register.html  # Registration page
-│   ├── styles.css     # CSS styles
-│   ├── script.js      # Login functionality
-│   └── register.js    # Registration functionality
-└── README.md          # This file
-```
-
-## Next Steps
-
-- Create main application page after successful login
-- Implement CV upload functionality
-- Add discussion forum features
-- Implement business dashboard for hiring
+```bash
+git clone [https://github.com/](https://github.com/)<your-username>/cvgator.git
+cd cvgator
